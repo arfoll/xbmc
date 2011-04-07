@@ -122,15 +122,6 @@ bool CDatabase::Open(DatabaseSettings &dbSettings)
 
   m_sqlite = true;
   
-  if ( dbSettings.type.Equals("mysql") )
-  {
-    // check we have all information before we cancel the fallback
-    if ( ! (dbSettings.host.IsEmpty() || dbSettings.user.IsEmpty() || dbSettings.pass.IsEmpty()) )
-      m_sqlite = false;
-    else
-      CLog::Log(LOGINFO, "essential mysql database information is missing (eg. host, user, pass)");
-  }
-
   // set default database name if appropriate
   if ( dbSettings.name.IsEmpty() )
     dbSettings.name = GetDefaultDBName();
@@ -146,10 +137,6 @@ bool CDatabase::Open(DatabaseSettings &dbSettings)
   if (dbSettings.type.Equals("sqlite3"))
   {
     m_pDB.reset( new SqliteDatabase() ) ;
-  }
-  else if (dbSettings.type.Equals("mysql"))
-  {
-    m_pDB.reset( new MysqlDatabase() ) ;
   }
   else
   {

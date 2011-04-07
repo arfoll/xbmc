@@ -430,7 +430,6 @@ if test "$host_vendor" = "apple" ; then
   LDFLAGS="$LDFLAGS -mmacosx-version-min=10.4"
   LDFLAGS="$LDFLAGS -isysroot /Developer/SDKs/MacOSX10.4u.sdk"
   LDFLAGS="$LDFLAGS -L/opt/local/lib"
-  LDFLAGS="$LDFLAGS -L/opt/local/lib/mysql5/mysql"
   LDFLAGS="$LDFLAGS -L/opt/local/lib/samba3"
   LIBS="$LIBS -framework IOKit"
   LIBS="$LIBS -framework Cocoa"
@@ -623,23 +622,12 @@ AS_CASE([x$use_libbluray],
 # platform dependent libraries
 if test "$host_vendor" = "apple" ; then
   AC_CHECK_LIB([iconv],     [main],, AC_MSG_ERROR($missing_library))
-  AC_CHECK_LIB([mysqlclient], [main],, AC_MSG_ERROR($missing_library))
   AC_CHECK_LIB([smbclient], [main],, AC_MSG_ERROR($missing_library))
   PKG_CHECK_MODULES([VORBISFILE],     [vorbisfile],
     [INCLUDES="$INCLUDES $VORBISFILE_CFLAGS"; LIBS="$LIBS $VORBISFILE_LIBS"],
     AC_MSG_ERROR($missing_library))
 else
-  AC_CHECK_PROG(MYSQL_CONFIG, mysql_config, "yes", "no")
-  if test $MYSQL_CONFIG = "yes"; then
-    INCLUDES="$INCLUDES `mysql_config --include`"
-    LIBS="$LIBS `mysql_config --libs`"
-  else
-    AC_MSG_ERROR($missing_program)
-  fi
-  # don't combine with mysqlclient check in apple section above, Linux needs
-  # paths from mysql_config
   AC_CHECK_LIB([modplug],    [main],, AC_MSG_ERROR($missing_library))
-  AC_CHECK_LIB([mysqlclient],[main],, AC_MSG_ERROR($missing_library))
   AC_CHECK_LIB([faad],       [main],, AC_MSG_ERROR($missing_library))
   AC_CHECK_HEADER([FLAC/stream_decoder.h],, AC_MSG_ERROR($missing_library))
   AC_CHECK_LIB([smbclient],  [main],, AC_MSG_ERROR($missing_library))

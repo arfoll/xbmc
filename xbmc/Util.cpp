@@ -50,7 +50,6 @@
 #ifdef HAS_FILESYSTEM_RAR
 #include "FileSystem/RarManager.h"
 #endif
-#include "FileSystem/MythDirectory.h"
 #ifdef HAS_UPNP
 #include "FileSystem/UPnPDirectory.h"
 #endif
@@ -1139,11 +1138,6 @@ bool CUtil::IsTuxBox(const CStdString& strFile)
   return strFile.Left(7).Equals("tuxbox:");
 }
 
-bool CUtil::IsMythTV(const CStdString& strFile)
-{
-  return strFile.Left(5).Equals("myth:");
-}
-
 bool CUtil::IsHDHomeRun(const CStdString& strFile)
 {
   return strFile.Left(10).Equals("hdhomerun:");
@@ -1166,9 +1160,6 @@ bool CUtil::IsLiveTV(const CStdString& strFile)
   || IsHDHomeRun(strFile)
   || IsHTSP(strFile)
   || strFile.Left(4).Equals("sap:"))
-    return true;
-
-  if (IsMythTV(strFile) && CMythDirectory::IsLiveTV(strFile))
     return true;
 
   return false;
@@ -3068,15 +3059,6 @@ bool CUtil::SupportsFileOperations(const CStdString& strPath)
     return true;
   if (IsSmb(strPath))
     return true;
-  if (IsMythTV(strPath))
-  {
-    /*
-     * Can't use CFile::Exists() to check whether the myth:// path supports file operations because
-     * it hits the directory cache on the way through, which has the Live Channels and Guide
-     * items cached.
-     */
-    return CMythDirectory::SupportsFileOperations(strPath);
-  }
   if (IsStack(strPath))
   {
     CStackDirectory dir;

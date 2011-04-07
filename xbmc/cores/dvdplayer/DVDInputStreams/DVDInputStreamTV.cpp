@@ -20,7 +20,6 @@
  */
 
 #include "DVDInputStreamTV.h"
-#include "FileSystem/MythFile.h"
 #include "FileSystem/VTPFile.h"
 #include "URL.h"
 
@@ -53,12 +52,6 @@ bool CDVDInputStreamTV::Open(const char* strFile, const std::string& content)
     m_pFile       = new CVTPFile();
     m_pLiveTV     = ((CVTPFile*)m_pFile)->GetLiveTV();
     m_pRecordable = NULL;
-  }
-  else
-  {
-    m_pFile       = new CMythFile();
-    m_pLiveTV     = ((CMythFile*)m_pFile)->GetLiveTV();
-    m_pRecordable = ((CMythFile*)m_pFile)->GetRecordable();
   }
 
   CURL url(strFile);

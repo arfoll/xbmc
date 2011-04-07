@@ -23,16 +23,11 @@
 #include "StringUtils.h"
 #include "Util.h"
 #include "FileSystem/File.h"
-#include "FileSystem/MythFile.h"
 #include "AdvancedSettings.h"
 #include "utils/log.h"
 #include "tinyXML/tinyxml.h"
 #include "PlatformDefs.h"
 
-extern "C"
-{
-#include "cmyth/include/cmyth/cmyth.h"
-}
 
 using namespace std;
 
@@ -132,16 +127,6 @@ bool CEdl::ReadEditDecisionLists(const CStdString& strMovie, const float fFrameR
 
     if (!bFound)
       bFound = ReadBeyondTV(strMovie);
-  }
-  /*
-   * Or if the movie points to MythTV and isn't live TV.
-   */
-  else if (CUtil::IsMythTV(strMovie)
-  &&      !CUtil::IsLiveTV(strMovie))
-  {
-    CLog::Log(LOGDEBUG, "%s - Checking for commercial breaks within MythTV for: %s", __FUNCTION__,
-              strMovie.c_str());
-    bFound = ReadMythCommBreaks(strMovie, fFramesPerSecond);
   }
 
   if (bFound)
@@ -792,58 +777,6 @@ CStdString CEdl::MillisecondsToTimeString(const int64_t iMilliseconds)
   CStdString strTimeString = StringUtils::SecondsToTimeString((long)(iMilliseconds / 1000), TIME_FORMAT_HH_MM_SS); // milliseconds to seconds
   strTimeString.AppendFormat(".%03i", iMilliseconds % 1000);
   return strTimeString;
-}
-
-bool CEdl::ReadMythCommBreaks(const CStdString& strMovie, const float fFramesPerSecond)
-{
-  Clear();
-
-  /*
-   * Exists() sets up all the internal bits needed for GetCommBreakList().
-   */
-  CMythFile mythFile;
-  CURL url(strMovie);
-  if (!mythFile.Exists(url))
-    return false;
-
-  CLog::Log(LOGDEBUG, "%s - Reading commercial breaks from MythTV for: %s", __FUNCTION__,
-            url.GetFileName().c_str());
-
-  cmyth_commbreaklist_t commbreaklist;
-  if (!mythFile.GetCommBreakList(commbreaklist))
-  {
-    CLog::Log(LOGERROR, "%s - Error getting commercial breaks from MythTV for: %s", __FUNCTION__,
-              url.GetFileName().c_str());
-    return false;
-  }
-
-  for (int i = 0; i < (int)commbreaklist->commbreak_count; i++)
-  {
-    cmyth_commbreak_t commbreak = commbreaklist->commbreak_list[i];
-
-    Cut cut;
-    cut.action = COMM_BREAK;
-    cut.start = (int64_t)(commbreak->start_mark / fFramesPerSecond * 1000);
-    cut.end = (int64_t)(commbreak->end_mark / fFramesPerSecond * 1000);
-
-    if (!AddCut(cut)) // Log and continue with errors while still testing.
-      CLog::Log(LOGERROR, "%s - Invalid commercial break [%s - %s] found in MythTV for: %s. Continuing anyway.",
-                __FUNCTION__, MillisecondsToTimeString(cut.start).c_str(),
-                MillisecondsToTimeString(cut.end).c_str(), url.GetFileName().c_str());
-  }
-
-  if (HasCut())
-  {
-    CLog::Log(LOGDEBUG, "%s - Added %"PRIuS" commercial breaks from MythTV for: %s. Used detected frame rate of %.3f fps to calculate times from the frame markers.",
-              __FUNCTION__, m_vecCuts.size(), url.GetFileName().c_str(), fFramesPerSecond);
-    return true;
-  }
-  else
-  {
-    CLog::Log(LOGDEBUG, "%s - No commercial breaks found in MythTV for: %s", __FUNCTION__,
-              url.GetFileName().c_str());
-    return false;
-  }
 }
 
 void CEdl::MergeShortCommBreaks()

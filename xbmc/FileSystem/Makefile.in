@@ -59,9 +59,6 @@ SRCS=AddonsDirectory.cpp \
      MusicDatabaseDirectory.cpp \
      MusicFileDirectory.cpp \
      MusicSearchDirectory.cpp \
-     MythDirectory.cpp \
-     MythFile.cpp \
-     MythSession.cpp \
      NptXbmcFile.cpp \
      NSFFileDirectory.cpp \
      OGGFileDirectory.cpp \

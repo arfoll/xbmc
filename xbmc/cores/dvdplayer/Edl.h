@@ -76,7 +76,6 @@ private:
   bool ReadComskip(const CStdString& strMovie, const float fFramesPerSecond);
   bool ReadVideoReDo(const CStdString& strMovie);
   bool ReadBeyondTV(const CStdString& strMovie);
-  bool ReadMythCommBreaks(const CStdString& strMovie, const float fFramesPerSecond);
 
   bool AddCut(Cut& NewCut);
   bool AddSceneMarker(const int64_t sceneMarker);

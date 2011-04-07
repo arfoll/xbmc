@@ -750,11 +750,6 @@ bool CFileItem::IsTuxBox() const
   return CUtil::IsTuxBox(m_strPath);
 }
 
-bool CFileItem::IsMythTV() const
-{
-  return CUtil::IsMythTV(m_strPath);
-}
-
 bool CFileItem::IsHDHomeRun() const
 {
   return CUtil::IsHDHomeRun(m_strPath);
