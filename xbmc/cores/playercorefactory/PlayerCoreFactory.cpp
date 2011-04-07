@@ -25,6 +25,7 @@
 #include "dvdplayer/DVDPlayer.h"
 #include "paplayer/PAPlayer.h"
 #include "paplayer/DVDPlayerCodec.h"
+#include "meegoplayer/MeegoPlayer.h"
 #include "GUIDialogContextMenu.h"
 #include "FileSystem/FileCurl.h"
 #include "utils/HttpHeader.h"
@@ -166,7 +167,7 @@ void CPlayerCoreFactory::GetPlayers( const CFileItem& item, VECPLAYERCORES &vecC
         CLog::Log(LOGDEBUG, "CPlayerCoreFactory::GetPlayers: adding PAPlayer (%d)", EPC_PAPLAYER);
         vecCores.push_back(EPC_PAPLAYER);
       }
-      else if (url.GetFileType().Equals("ac3") 
+      else if (url.GetFileType().Equals("ac3")
             || url.GetFileType().Equals("dts"))
       {
         CLog::Log(LOGDEBUG, "CPlayerCoreFactory::GetPlayers: adding DVDPlayer (%d)", EPC_DVDPLAYER);
@@ -298,6 +299,7 @@ bool CPlayerCoreFactory::LoadConfiguration(TiXmlElement* pConfig, bool clear)
       EPLAYERCORES eCore = EPC_NONE;
       if (type == "dvdplayer" || type == "mplayer") eCore = EPC_DVDPLAYER;
       if (type == "paplayer" ) eCore = EPC_PAPLAYER;
+      if (type == "meegoplayer" ) eCore = EPC_MEEPLAYER;
       if (type == "externalplayer" ) eCore = EPC_EXTPLAYER;
 
       if (eCore != EPC_NONE)

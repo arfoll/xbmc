@@ -26,6 +26,7 @@
 #include "PlayerCoreFactory.h"
 #include "dvdplayer/DVDPlayer.h"
 #include "paplayer/PAPlayer.h"
+#include "meegoplayer/MeegoPlayer.h"
 #include "ExternalPlayer/ExternalPlayer.h"
 #include "utils/log.h"
 
@@ -75,6 +76,7 @@ public:
       case EPC_DVDPLAYER: pPlayer = new CDVDPlayer(callback); break;
       case EPC_PAPLAYER: pPlayer = new PAPlayer(callback); break;
       case EPC_EXTPLAYER: pPlayer = new CExternalPlayer(callback); break;
+      case EPC_MEEPLAYER: pPlayer = new CMeegoPlayer(callback); break;
       default: return NULL;
     }
 
