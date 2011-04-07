@@ -393,7 +393,7 @@ void CMeegoPlayer::waitOnDbus()
   dbus_error_init(&err);
 
   /* connect to the bus and check for errors */
-  conn = dbus_bus_get(DBUS_BUS_SESSION, &err);
+  conn = dbus_bus_get(DBUS_BUS_SYSTEM, &err);
   if (dbus_error_is_set(&err)) {
      CLog::Log(LOGERROR,"Meego dbus player: Connection Error (%s)", err.message);
      dbus_error_free(&err);
@@ -495,7 +495,7 @@ CStdString CMeegoPlayer::getProperty(CStdString property)
   dbus_error_init (&error);
 
   int reply_timeout;
-  connection = dbus_bus_get (DBUS_BUS_SESSION, &error);
+  connection = dbus_bus_get (DBUS_BUS_SYSTEM, &error);
   if (connection == NULL)
   {
     CLog::Log(LOGDEBUG,"Failed to open connection to dbus. Check permissions: %s", error.message);
@@ -564,7 +564,7 @@ int CMeegoPlayer::setDbusProperty(char *property, char *value)
   dbus_error_init (&error);
 
   int reply_timeout;
-  connection = dbus_bus_get (DBUS_BUS_SESSION, &error);
+  connection = dbus_bus_get (DBUS_BUS_SYSTEM, &error);
   if (connection == NULL)
   {
     fprintf(stderr,"Failed to open connection to dbus. Check permissions\n");
@@ -620,7 +620,7 @@ void CMeegoPlayer::callDbusMethod(CStdString method, CStdString value)
   dbus_error_init (&error);
 
   int reply_timeout;
-  connection = dbus_bus_get (DBUS_BUS_SESSION, &error);
+  connection = dbus_bus_get (DBUS_BUS_SYSTEM, &error);
   if (connection == NULL)
   {
     CLog::Log(LOGDEBUG,"Failed to open connection to dbus. Check permissions: %s", error.message);
