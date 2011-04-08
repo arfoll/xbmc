@@ -118,7 +118,7 @@ bool CMeegoPlayer::CloseFile()
   if (m_dialog && m_dialog->IsActive()) m_dialog->Close();
 
   // dbus stop playback
-  callDbusMethod("Stop", "");
+  callDbusMethod("stop", "");
   // make sure we know we are not playing
   m_bIsPlaying = false;
   m_paused = false;
@@ -220,11 +220,11 @@ void CMeegoPlayer::Pause()
 {
   if (m_paused == true) {
     m_paused = false;
-    callDbusMethod("Pause", "");
+    callDbusMethod("play", "");
     m_callback.OnPlayBackResumed();
   } else {
     m_paused = true;
-    callDbusMethod("Pause", "");
+    callDbusMethod("pause", "");
     m_callback.OnPlayBackPaused();
   }
 }
@@ -648,7 +648,7 @@ void CMeegoPlayer::callDbusMethod(CStdString method, CStdString value)
                                               "stop");
       dbus_message_append_args (message, DBUS_TYPE_INVALID);
       CLog::Log(LOGDEBUG, "Meego dbus player: Stop message will be sent");
-  } else if (method.compare("Pause") == 0) {
+  } else if (method.compare("pause") == 0) {
       message = dbus_message_new_method_call ("uk.co.madeo.uplayer",
                                               "/uk/co/madeo/uplayer",
                                               "uk.co.madeo.uplayer",
