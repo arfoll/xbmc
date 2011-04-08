@@ -83,7 +83,6 @@ CMeegoPlayer::CMeegoPlayer(IPlayerCallback& callback)
 
   m_dialog = NULL;
   m_isFullscreen = true;
-
 }
 
 CMeegoPlayer::~CMeegoPlayer()
@@ -385,7 +384,7 @@ void CMeegoPlayer::waitOnDbus()
 {
   DBusMessage* msg;
   DBusMessageIter args;
-  DBusConnection* conn;
+  DBusConnection* connection;
   DBusError err;
   dbus_int32_t sigvalueInt;
 
@@ -393,18 +392,18 @@ void CMeegoPlayer::waitOnDbus()
   dbus_error_init(&err);
 
   /* connect to the bus and check for errors */
-  conn = dbus_bus_get(DBUS_BUS_SYSTEM, &err);
+  connection = dbus_bus_get(DBUS_BUS_SYSTEM, &err);
   if (dbus_error_is_set(&err)) {
      CLog::Log(LOGERROR,"Meego dbus player: Connection Error (%s)", err.message);
      dbus_error_free(&err);
   }
-  if (NULL == conn) {
+  if (NULL == connection) {
      CLog::Log(LOGERROR,"Meego dbus player: Connection is NULL - %s", err.message);
      return;
   }
   /* add a rule for which messages we want to see */
-  dbus_bus_add_match(conn, "type='signal',interface='uk.co.madeo.uplayer'", &err);
-  dbus_connection_flush(conn);
+  dbus_bus_add_match(connection, "type='signal',interface='uk.co.madeo.uplayer'", &err);
+  dbus_connection_flush(connection);
   if (dbus_error_is_set(&err)) {
      CLog::Log(LOGERROR,"Meego dbus player: General error on dbus");
      return;
@@ -413,8 +412,8 @@ void CMeegoPlayer::waitOnDbus()
   /* stay stuck here until dbus says it's ok or m_bIsPlaying is false */
   while (m_bIsPlaying) {
       /* non blocking read of the next available message */
-      dbus_connection_read_write(conn, 0);
-      msg = dbus_connection_pop_message(conn);
+      dbus_connection_read_write(connection, 0);
+      msg = dbus_connection_pop_message(connection);
 
       /* loop again if we haven't read a message */
       if (NULL == msg) {
@@ -508,9 +507,9 @@ CStdString CMeegoPlayer::getProperty(CStdString property)
   /* Grab system property from parameters */
   const char *propertyC = property.c_str();
 
-  message = dbus_message_new_method_call ("uk.co.madeo.uplayer",       /*service*/
-                                          "/uk/co/madeo/uplayer",     /*path*/
-                                          "uk.co.madeo.uplayer",      /*interface*/
+  message = dbus_message_new_method_call ("uk.co.madeo.uplayer",
+                                          "/uk/co/madeo/uplayer",
+                                          "uk.co.madeo.uplayer",
                                           "Getproperty");
   dbus_message_append_args (message,
                             DBUS_TYPE_INT32, &v_INT32,
@@ -629,7 +628,7 @@ void CMeegoPlayer::callDbusMethod(CStdString method, CStdString value)
   if (method.compare("set_uri") == 0) {
       const char *valueC = value.c_str();
       message = dbus_message_new_method_call ("uk.co.madeo.uplayer",
-                                              "/uk/co/madeo/player",
+                                              "/uk/co/madeo/uplayer",
                                               "uk.co.madeo.uplayer",
                                               "set_uri");
       dbus_message_append_args (message, DBUS_TYPE_STRING, &valueC,
@@ -637,21 +636,21 @@ void CMeegoPlayer::callDbusMethod(CStdString method, CStdString value)
       CLog::Log(LOGDEBUG, "Meego dbus player: Play %s message will be sent", valueC);
   } else if (method.compare("play") == 0) {
       message = dbus_message_new_method_call ("uk.co.madeo.uplayer",
-                                              "/uk/co/madeo/player",
+                                              "/uk/co/madeo/uplayer",
                                               "uk.co.madeo.uplayer",
                                               "play");
       dbus_message_append_args (message, DBUS_TYPE_INVALID);
       CLog::Log(LOGDEBUG, "Meego dbus player: Play message will be sent");
   } else if (method.compare("stop") == 0) {
       message = dbus_message_new_method_call ("uk.co.madeo.uplayer",
-                                              "/uk/co/madeo/player",
+                                              "/uk/co/madeo/uplayer",
                                               "uk.co.madeo.uplayer",
                                               "stop");
       dbus_message_append_args (message, DBUS_TYPE_INVALID);
       CLog::Log(LOGDEBUG, "Meego dbus player: Stop message will be sent");
   } else if (method.compare("Pause") == 0) {
       message = dbus_message_new_method_call ("uk.co.madeo.uplayer",
-                                              "/uk/co/madeo/player",
+                                              "/uk/co/madeo/uplayer",
                                               "uk.co.madeo.uplayer",
                                               "pause");
       dbus_message_append_args (message, DBUS_TYPE_INVALID);
