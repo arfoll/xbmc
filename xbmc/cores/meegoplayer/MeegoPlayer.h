@@ -82,8 +82,7 @@ private:
   void GetCustomRegexpReplacers(TiXmlElement *pRootElement, CStdStringArray& settings);
   virtual void Process();
   void callDbusMethod(CStdString method, CStdString uri);
-  int setDbusProperty(char *property, char *value);
-  void waitOnDbus();
+  bool waitOnDbus();
   CStdString getProperty(CStdString property);
 
   bool m_bAbortRequest;
@@ -97,6 +96,7 @@ private:
   int m_speed;
   int m_totalTime;
   int m_time;
+  CStdString dbusURI;
   CStdString m_launchFilename;
   HWND m_hwndXbmc;
   CGUIDialogOK* m_dialog;
