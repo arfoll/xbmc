@@ -40,22 +40,20 @@
 #include "XMLUtils.h"
 #include "utils/TimeUtils.h"
 #include "utils/log.h"
-#include <dbus/dbus.h>
 #include "GUIDialogBusy.h"
 #include "GUIUserMessages.h"
 #include <SDL/SDL_syswm.h>
 
-// If the process ends in less than this time (ms), we assume it's a launcher
-// and wait for manual intervention before continuing
-#define LAUNCHER_PROCESS_TIME 2000
-// Time (ms) we give a process we sent a WM_QUIT to close before terminating
-#define PROCESS_GRACE_TIME 3000
 // Default time after which the item's playcount is incremented
 #define DEFAULT_PLAYCOUNT_MIN_TIME 10
 // The player bus name
 #define UPLAYER_BUS_NAME "uk.co.madeo.uplayer"
 // The player bus path
 #define UPLAYER_BUS_PATH "/uk/co/madeo/uplayer"
+// GDL sample cfgplane
+#define CFGPLANE "/usr/lib/gdl/gdl_samples/cfgplane"
+// DBUS reply timeout
+#define DBUS_REPLY_TIMEOUT -1
 
 using namespace XFILE;
 
@@ -83,6 +81,10 @@ CMeegoPlayer::CMeegoPlayer(IPlayerCallback& callback)
 
   m_dialog = NULL;
   m_isFullscreen = true;
+
+  if (!InitializeDbus()) {
+      CLog::Log(LOGNOTICE, "Meego dbus player: DBUS initalisation failed");
+  }
 }
 
 CMeegoPlayer::~CMeegoPlayer()
@@ -123,7 +125,7 @@ bool CMeegoPlayer::CloseFile()
   // make sure we know we are not playing
   m_bIsPlaying = false;
   m_paused = false;
-  CLog::Log(LOGNOTICE, "Playback stopped");
+  CLog::Log(LOGNOTICE, "Meego dbus player: Playback stopped");
 
   return true;
 }
@@ -178,10 +180,10 @@ void CMeegoPlayer::Process()
   }
 
   // fix for flash player to clean the screen properly - resets screen A and B
-  system("echo '' | /opt/gdl_samples/cfgplane UPP_B -r");
-  system("echo 'GDL_PLANE_VID_MISMATCH_POLICY GDL_VID_POLICY_RESIZE' | /opt/gdl_samples/cfgplane UPP_A");
+  system("echo '' | "CFGPLANE" UPP_B -r");
+  system("echo 'GDL_PLANE_VID_MISMATCH_POLICY GDL_VID_POLICY_RESIZE' | "CFGPLANE" UPP_A");
 
-  CLog::Log(LOGNOTICE, "MeegoPlayer : URI sent to dbus player is : %s",dbusURI.c_str());
+  CLog::Log(LOGNOTICE, "Meego dbus player: URI sent to dbus player is : %s", dbusURI.c_str());
   callDbusMethod("set_uri", dbusURI);
   callDbusMethod("play", "");
 
@@ -189,7 +191,7 @@ void CMeegoPlayer::Process()
   bool eos = waitOnDbus();
 
   // we close playback
-  CLog::Log(LOGNOTICE, "Stopped playback");
+  CLog::Log(LOGNOTICE, "Meego dbus player: Stopped playback");
 
   m_bIsPlaying = false;
   m_paused = false;
@@ -202,16 +204,16 @@ void CMeegoPlayer::Process()
     CLog::Log(LOGNOTICE, "%s: Reclaiming audio device %d", __FUNCTION__, iActiveDevice);
     g_audioContext.SetActiveDevice(iActiveDevice);
   }
-  
+
   if (!eos) {
     m_callback.OnPlayBackStopped();
   }
   else {
     m_callback.OnPlayBackEnded();
   }
-  
+
   /* Make sure UPP_C is fully visible */
-  system("echo 'GDL_PLANE_ALPHA_GLOBAL 255' | /opt/gdl_samples/cfgplane  UPP_C");
+  system("echo 'GDL_PLANE_ALPHA_GLOBAL 255' | "CFGPLANE"  UPP_C");
 }
 
 void CMeegoPlayer::Pause()
@@ -371,36 +373,40 @@ bool CMeegoPlayer::Initialize(TiXmlElement* pConfig)
   XMLUtils::GetBoolean(pConfig, "pinkmusic", m_pinkmusic);
   XMLUtils::GetBoolean(pConfig, "pinkvideo", m_pinkvideo);
 
-  CLog::Log(LOGNOTICE, "MeegoPlayer : pinkmusic (%s), pinkvideo (%s)",
+  CLog::Log(LOGNOTICE, "Meego dbus player : pinkmusic (%s), pinkvideo (%s)",
             m_pinkmusic ? "true" : "false",
             m_pinkvideo ? "true" : "false");
 
   return true;
 }
 
+bool CMeegoPlayer::InitializeDbus()
+{
+  /* Initialise the error bus */
+  dbus_error_init (&error);
+  connection = dbus_bus_get (DBUS_BUS_SYSTEM, &error);
+
+  if (dbus_error_is_set(&error)) {
+     CLog::Log(LOGERROR,"Meego dbus player: Connection Error (%s)", error.message);
+     dbus_error_free(&error);
+     return false;
+  }
+
+  return true;
+}
+
 bool CMeegoPlayer::waitOnDbus()
 {
-  DBusMessage* msg;
-  DBusConnection* connection;
-  DBusError err;
+  DBusMessage* message;
 
-  /* initialise the errors */
-  dbus_error_init(&err);
-
-  /* connect to the bus and check for errors */
-  connection = dbus_bus_get(DBUS_BUS_SYSTEM, &err);
-  if (dbus_error_is_set(&err)) {
-     CLog::Log(LOGERROR,"Meego dbus player: Connection Error (%s)", err.message);
-     dbus_error_free(&err);
-  }
   if (NULL == connection) {
-     CLog::Log(LOGERROR,"Meego dbus player: Connection is NULL - %s", err.message);
+     CLog::Log(LOGERROR,"Meego dbus player: Connection is NULL - %s", error.message);
      return true;
   }
   /* add a rule for which messages we want to see */
-  dbus_bus_add_match(connection, "type='signal',interface='uk.co.madeo.uplayer'", &err);
+  dbus_bus_add_match(connection, "type='signal',interface='"UPLAYER_BUS_NAME"'", &error);
   dbus_connection_flush(connection);
-  if (dbus_error_is_set(&err)) {
+  if (dbus_error_is_set(&error)) {
     CLog::Log(LOGERROR,"Meego dbus player: General error on dbus");
     return true;
   }
@@ -410,23 +416,23 @@ bool CMeegoPlayer::waitOnDbus()
   while (m_bIsPlaying) {
     /* non blocking read of the next available message */
     dbus_connection_read_write(connection, 0);
-    msg = dbus_connection_pop_message(connection);
+    message = dbus_connection_pop_message(connection);
 
     /* loop again if we haven't read a message */
-    if (msg != NULL) {
+    if (message != NULL) {
       CLog::Log(LOGDEBUG,"Meego dbus player: Received signal from dbus");
-      if (dbus_message_is_signal (msg, UPLAYER_BUS_NAME, "emitEOSSignal")) {
+      if (dbus_message_is_signal (message, UPLAYER_BUS_NAME, "emitEOSSignal")) {
         /* we are EOF */
         m_bIsPlaying = false;
         CLog::Log(LOGNOTICE,"Meego dbus player: EOF received");
-      } else if (dbus_message_is_signal (msg, UPLAYER_BUS_NAME, "emitNewURI")) {
+      } else if (dbus_message_is_signal (message, UPLAYER_BUS_NAME, "emitNewURI")) {
         CLog::Log(LOGDEBUG,"Meego dbus player: New URI signal received");
         //m_bIsPlaying = false;
         //eos = false;
       } else {
         CLog::Log(LOGNOTICE,"Meego dbus player: Signal received but not recognised");
       }
-      dbus_message_unref(msg);
+      dbus_message_unref(message);
     } else {
       Sleep(100);
     }
@@ -434,125 +440,32 @@ bool CMeegoPlayer::waitOnDbus()
   return eos;
 }
 
-CStdString CMeegoPlayer::getProperty(CStdString property)
+void CMeegoPlayer::callDbusMethod(CStdString method, CStdString value)
 {
-  DBusConnection *connection;
-  DBusError error;
-  DBusMessageIter args;
   DBusMessage *message;
   DBusMessage *reply;
-  CStdString output;
 
-  /* Initialise the error bus */
-  dbus_error_init (&error);
-
-  int reply_timeout;
-  connection = dbus_bus_get (DBUS_BUS_SYSTEM, &error);
   if (connection == NULL) {
     CLog::Log(LOGDEBUG,"Failed to open connection to dbus. Check permissions: %s", error.message);
-    //dbus_error_free (error);
+    goto end;
   }
-
-  /* We always use handle 1 */
-  dbus_int32_t v_INT32 = 1;
-
-  /* Grab system property from parameters */
-  const char *propertyC = property.c_str();
 
   message = dbus_message_new_method_call (UPLAYER_BUS_NAME,
                                           UPLAYER_BUS_PATH,
                                           UPLAYER_BUS_NAME,
-                                          "Getproperty");
-  dbus_message_append_args (message,
-                            DBUS_TYPE_INT32, &v_INT32,
-                            DBUS_TYPE_STRING, &propertyC,
-                            DBUS_TYPE_INVALID);
-
-  /* Call method */
-  reply_timeout = -1;   /*don't timeout*/
-  reply = dbus_connection_send_with_reply_and_block (connection, message, reply_timeout, &error);
-
-  CLog::Log(LOGDEBUG,"Meego dbus player: Received signal from dbus");
-  if (!dbus_message_iter_init(message, &args))
-    CLog::Log(LOGDEBUG,"Meego dbus player: Message is empty");
-  else if(dbus_message_has_interface(message, UPLAYER_BUS_NAME)) {
-    CLog::Log(LOGDEBUG,"Meego dbus player: Message is from correct interface");
-
-    int type = 0;
-    int i = 0;
-    while (dbus_message_iter_has_next(&args)) {
-      type = dbus_message_iter_get_arg_type (&args);
-      // make sure second arg is a string!
-      if (type == DBUS_TYPE_STRING) {
-        char * str;
-        dbus_message_iter_get_basic(&args, &str);
-        printf("Meego dbus player: iterator returned %s", str);
-        output = CStdString(str);
-      } else {
-         CLog::Log(LOGDEBUG,"Meego dbus player: type was %d, expected %d, i %d", type, DBUS_TYPE_STRING, i);
-      }
-    }
-    dbus_message_unref(message);
-  }
-  CLog::Log(LOGDEBUG,"Meego dbus player: Value returned = %s", output.c_str());
-  return output;
-}
-
-void CMeegoPlayer::callDbusMethod(CStdString method, CStdString value)
-{
-  DBusConnection *connection;
-  DBusError error;
-  DBusMessage *message;
-  DBusMessage *reply;
-
-  /* Initialise the error bus */
-  dbus_error_init (&error);
-
-  int reply_timeout;
-  connection = dbus_bus_get (DBUS_BUS_SYSTEM, &error);
-  if (connection == NULL)
-  {
-    CLog::Log(LOGDEBUG,"Failed to open connection to dbus. Check permissions: %s", error.message);
-  }
-
+                                          method.c_str());
   if (method.compare("set_uri") == 0) {
-      const char *valueC = value.c_str();
-      message = dbus_message_new_method_call (UPLAYER_BUS_NAME,
-                                              UPLAYER_BUS_PATH,
-                                              UPLAYER_BUS_NAME,
-                                              "set_uri");
-      dbus_message_append_args (message, DBUS_TYPE_STRING, &valueC,
-                DBUS_TYPE_INVALID);
-      CLog::Log(LOGDEBUG, "Meego dbus player: Play %s message will be sent", valueC);
-  } else if (method.compare("play") == 0) {
-      message = dbus_message_new_method_call (UPLAYER_BUS_NAME,
-                                              UPLAYER_BUS_PATH,
-                                              UPLAYER_BUS_NAME,
-                                              "play");
-      dbus_message_append_args (message, DBUS_TYPE_INVALID);
-      CLog::Log(LOGDEBUG, "Meego dbus player: Play message will be sent");
-  } else if (method.compare("stop") == 0) {
-      message = dbus_message_new_method_call (UPLAYER_BUS_NAME,
-                                              UPLAYER_BUS_PATH,
-                                              UPLAYER_BUS_NAME,
-                                              "stop");
-      dbus_message_append_args (message, DBUS_TYPE_INVALID);
-      CLog::Log(LOGDEBUG, "Meego dbus player: Stop message will be sent");
-  } else if (method.compare("pause") == 0) {
-      message = dbus_message_new_method_call (UPLAYER_BUS_NAME,
-                                              UPLAYER_BUS_PATH,
-                                              UPLAYER_BUS_NAME,
-                                              "pause");
-      dbus_message_append_args (message, DBUS_TYPE_INVALID);
-      CLog::Log(LOGDEBUG, "Meego dbus player: Pause message will be sent");
+    const char *valueC = value.c_str();
+    dbus_message_append_args (message, DBUS_TYPE_STRING, &valueC,
+        DBUS_TYPE_INVALID);
+    CLog::Log(LOGDEBUG, "Meego dbus player: set_uri %s message will be sent", valueC);
   } else {
-      CLog::Log(LOGDEBUG,"Unkown DBUS message: %s\n", method.c_str());
-      goto end;
+    dbus_message_append_args (message, DBUS_TYPE_INVALID);
+    CLog::Log(LOGDEBUG, "Meego dbus player: %s message will be sent", method.c_str());
   }
 
   /* Call method */
-  reply_timeout = -1;   /* .5s timeout */
-  reply = dbus_connection_send_with_reply_and_block (connection, message, reply_timeout, &error);
+  reply = dbus_connection_send_with_reply_and_block (connection, message, DBUS_REPLY_TIMEOUT, &error);
 
   if (reply != NULL) {
     dbus_message_unref (reply);

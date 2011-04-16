@@ -23,6 +23,7 @@
 
 #include "IPlayer.h"
 #include "utils/Thread.h"
+#include <dbus/dbus.h>
 
 class CGUIDialogOK;
 
@@ -84,6 +85,7 @@ private:
   void callDbusMethod(CStdString method, CStdString uri);
   bool waitOnDbus();
   CStdString getProperty(CStdString property);
+  bool InitializeDbus();
 
   bool m_bAbortRequest;
   bool m_bIsPlaying;
@@ -106,4 +108,7 @@ private:
   bool m_pinkvideo;
   bool m_playOneStackItem;
   int m_playCountMinTime;
+
+  DBusConnection *connection;
+  DBusError error;
 };
