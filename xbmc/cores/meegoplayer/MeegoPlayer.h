@@ -82,7 +82,7 @@ public:
 private:
   void GetCustomRegexpReplacers(TiXmlElement *pRootElement, CStdStringArray& settings);
   virtual void Process();
-  void callDbusMethod(CStdString method, CStdString uri, int speed);
+  int callDbusMethod(CStdString method, CStdString uri, int speed);
   bool waitOnDbus();
   CStdString getProperty(CStdString property);
   bool InitializeDbus();

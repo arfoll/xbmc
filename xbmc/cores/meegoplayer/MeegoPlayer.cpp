@@ -412,6 +412,7 @@ bool CMeegoPlayer::waitOnDbus()
   }
 
   bool eos = true;
+  
   /* stay stuck here until dbus says it's ok or m_bIsPlaying is false */
   while (m_bIsPlaying) {
     /* non blocking read of the next available message */
@@ -424,6 +425,7 @@ bool CMeegoPlayer::waitOnDbus()
           CLog::Log(LOGDEBUG,"Meego dbus player: m_speed is : %d", m_speed);
           callDbusMethod ("set_rate", "", m_speed);
           m_old_speed = m_speed;
+          m_time = callDbusMethod ("get_position", "", 0);
       }
       Sleep(100);
     }
@@ -435,6 +437,9 @@ bool CMeegoPlayer::waitOnDbus()
         CLog::Log(LOGNOTICE,"Meego dbus player: EOF received");
       } else if (dbus_message_is_signal (message, UPLAYER_BUS_NAME, "emitNewURI")) {
         CLog::Log(LOGDEBUG,"Meego dbus player: New URI signal received");
+        Sleep(100);
+        /* get the duration of the file */
+        m_totalTime = callDbusMethod ("get_duration", "", 0);
       } else {
         CLog::Log(LOGNOTICE,"Meego dbus player: Signal received but not recognised");
       }
@@ -444,14 +449,22 @@ bool CMeegoPlayer::waitOnDbus()
   return eos;
 }
 
-void CMeegoPlayer::callDbusMethod(CStdString method, CStdString value, dbus_int32_t speed)
+int CMeegoPlayer::callDbusMethod(CStdString method, CStdString value, dbus_int32_t speed)
 {
   DBusMessage *message;
   DBusMessage *reply;
+  dbus_int32_t code = 0;
 
   if (connection == NULL) {
     CLog::Log(LOGDEBUG,"Failed to open connection to dbus. Check permissions: %s", error.message);
     goto end;
+  }
+
+  if (dbus_error_is_set(&error)) {
+    CLog::Log(LOGERROR,"Meego dbus player: General error on dbus");
+    if (!InitializeDbus()) {
+      CLog::Log(LOGNOTICE, "Meego dbus player: DBUS initalisation failed");
+    }
   }
 
   message = dbus_message_new_method_call (UPLAYER_BUS_NAME,
@@ -475,6 +488,20 @@ void CMeegoPlayer::callDbusMethod(CStdString method, CStdString value, dbus_int3
   reply = dbus_connection_send_with_reply_and_block (connection, message, DBUS_REPLY_TIMEOUT, &error);
 
   if (reply != NULL) {
+    DBusMessageIter args;
+    int type;
+    
+    if (dbus_message_iter_init(message, &args)) {
+      /* message is not empty */
+      while (dbus_message_iter_has_next(&args)) {
+        type = dbus_message_iter_get_arg_type (&args);
+        if (type == DBUS_TYPE_INT32) {
+          dbus_message_iter_get_basic(&args, &code);
+          CLog::Log(LOGDEBUG, "Meego dbus player: code is %d", code);
+        }
+      }
+    }
+
     dbus_message_unref (reply);
     dbus_message_unref (message);
   } else {
@@ -488,5 +515,5 @@ void CMeegoPlayer::callDbusMethod(CStdString method, CStdString value, dbus_int3
   }
 
   end:
-    return;
+    return code;
 }
