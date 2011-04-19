@@ -1975,7 +1975,7 @@ void CApplication::Render()
     m_bPresentFrame = false;
     if (!extPlayerActive && g_graphicsContext.IsFullScreenVideo() && !IsPaused())
     {
-#ifdef HAS_SDL
+#if 0
       SDL_mutexP(m_frameMutex);
 
       //wait until event is set, but modify remaining time
@@ -3749,9 +3749,9 @@ bool CApplication::PlayFile(const CFileItem& item, bool bRestart)
     if( IsPlayingVideo() )
     {
       // if player didn't manange to switch to fullscreen by itself do it here
-      if( options.fullscreen && g_renderManager.IsStarted()
-       && g_windowManager.GetActiveWindow() != WINDOW_FULLSCREEN_VIDEO )
-       SwitchToFullScreen();
+      if( g_windowManager.GetActiveWindow() != WINDOW_FULLSCREEN_VIDEO ) {
+        SwitchToFullScreen();
+      }
 
       // Save information about the stream if we currently have no data
       if (item.HasVideoInfoTag() && !item.IsDVDImage() && !item.IsDVDFile())
@@ -4036,7 +4036,10 @@ bool CApplication::IsPlayingVideo() const
 
 bool CApplication::IsPlayingFullScreenVideo() const
 {
-  return IsPlayingVideo() && g_graphicsContext.IsFullScreenVideo();
+  CLog::Log(LOGDEBUG,"FullScreen status Demanded");
+  // if we are playing Video and are in visualisation mode
+  int iWin = g_windowManager.GetActiveWindow();
+  return IsPlayingVideo() && (g_graphicsContext.IsFullScreenVideo() || iWin == WINDOW_VISUALISATION);
 }
 
 void CApplication::SaveFileState()

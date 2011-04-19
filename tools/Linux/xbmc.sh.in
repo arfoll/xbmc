@@ -117,6 +117,14 @@ if which gdb >/dev/null 2>&1; then
   fi
 fi
 
+#set chroma color
+echo "GDL_PLANE_CHROMA_KEY_SRC_ENABLE GDL_TRUE" | /usr/lib/gdl/gdl_samples/cfgplane UPP_C
+echo "GDL_PLANE_CHROMA_KEY_SRC_HIGH 0xff 0xff 0x00 0xff" | /usr/lib/gdl/gdl_samples/cfgplane UPP_C
+echo "GDL_PLANE_CHROMA_KEY_SRC_LOW 0xff 0xff 0x00 0xff" | /usr/lib/gdl/gdl_samples/cfgplane UPP_C
+
+#remove possible lock file
+rm -f /tmp/executor.lock
+
 LOOP=1
 while [ $(( $LOOP )) = "1" ]
 do
@@ -131,5 +139,8 @@ do
     print_crash_report
   fi
 done
+
+#remove possible lock file
+rm -f /tmp/executor.lock
 
 exit $RET

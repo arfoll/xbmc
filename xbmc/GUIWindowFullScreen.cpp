@@ -422,7 +422,7 @@ bool CGUIWindowFullScreen::OnAction(const CAction &action)
     { // toggle the aspect ratio mode (only if the info is onscreen)
       if (m_bShowViewModeInfo)
       {
-#ifdef HAS_VIDEO_PLAYBACK
+#if 0
         g_renderManager.SetViewMode(++g_settings.m_currentVideoSettings.m_ViewMode);
 #endif
       }
@@ -539,6 +539,8 @@ bool CGUIWindowFullScreen::OnMessage(CGUIMessage& message)
         g_windowManager.PreviousWindow();
         return true;
       }
+      CLog::Log(LOGINFO, "Set Chroma to Full");
+      system("echo 'GDL_PLANE_ALPHA_GLOBAL 255' | /usr/lib/gdl/gdl_samples/cfgplane UPP_C"); 
       g_infoManager.SetShowInfo(false);
       g_infoManager.SetShowCodec(false);
       m_bShowCurrentTime = false;
@@ -547,7 +549,7 @@ bool CGUIWindowFullScreen::OnMessage(CGUIMessage& message)
       // switch resolution
       g_graphicsContext.SetFullScreenVideo(true);
 
-#ifdef HAS_VIDEO_PLAYBACK
+#if 0
       // make sure renderer is uptospeed
       g_renderManager.Update(false);
 #endif
@@ -579,6 +581,11 @@ bool CGUIWindowFullScreen::OnMessage(CGUIMessage& message)
   case GUI_MSG_WINDOW_DEINIT:
     {
       CGUIWindow::OnMessage(message);
+      /* Check this is a half chroma case*/
+      if (g_application.IsPlayingVideo()) {
+        CLog::Log(LOGINFO, "Set Chroma to 180");
+        system("echo 'GDL_PLANE_ALPHA_GLOBAL 180' | /usr/lib/gdl/gdl_samples/cfgplane UPP_C");
+      }
 
       CGUIDialog *pDialog = (CGUIDialog *)g_windowManager.GetWindow(WINDOW_DIALOG_OSD_TELETEXT);
       if (pDialog) pDialog->Close(true);
@@ -595,7 +602,7 @@ bool CGUIWindowFullScreen::OnMessage(CGUIMessage& message)
       g_graphicsContext.SetFullScreenVideo(false);
       lock.Leave();
 
-#ifdef HAS_VIDEO_PLAYBACK
+#if 0
       // make sure renderer is uptospeed
       g_renderManager.Update(false);
 #endif
@@ -817,6 +824,21 @@ void CGUIWindowFullScreen::FrameMove()
 
 void CGUIWindowFullScreen::Render()
 {
+  /* Too many calls so disabled for now */
+  //CLog::Log(LOGDEBUG,"Drawing Magic Pink Video square");
+  /* Draw a magic pink 1080p square - our max resolution on CE4100 */
+  glBegin( GL_QUADS );
+  {
+    /* We actually use a very close shade of black so that our PNG blending looks ok */
+    glColor4f( 1.0f, 0.0f, 1.0f, 1.0f );
+    glVertex2f( 0.0f, 0.0f );
+    glVertex2f( 0.0f, 1080.0f );
+    glVertex2f( 1920.0f, 1080.0f );
+    glVertex2f( 1920.0f, 0.0f );
+  }
+  glEnd();
+  glDisable( GL_TEXTURE_2D );
+
   if (g_application.m_pPlayer)
     RenderTTFSubtitles();
   CGUIWindow::Render();
