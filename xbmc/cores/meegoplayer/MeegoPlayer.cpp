@@ -66,7 +66,7 @@ CMeegoPlayer::CMeegoPlayer(IPlayerCallback& callback)
   m_paused = false;
   m_playbackStartTime = 0;
   m_speed = 1;
-  m_trickPlay = false;
+  m_old_speed = 1;
   // just for test
   m_totalTime = 10000;
   m_time = 0;
@@ -121,7 +121,7 @@ bool CMeegoPlayer::CloseFile()
   if (m_dialog && m_dialog->IsActive()) m_dialog->Close();
 
   // dbus stop playback
-  callDbusMethod("stop", "");
+  callDbusMethod("stop", "", 0);
   // make sure we know we are not playing
   m_bIsPlaying = false;
   m_paused = false;
@@ -184,8 +184,8 @@ void CMeegoPlayer::Process()
   system("echo 'GDL_PLANE_VID_MISMATCH_POLICY GDL_VID_POLICY_RESIZE' | "CFGPLANE" UPP_A");
 
   CLog::Log(LOGNOTICE, "Meego dbus player: URI sent to dbus player is : %s", dbusURI.c_str());
-  callDbusMethod("set_uri", dbusURI);
-  callDbusMethod("play", "");
+  callDbusMethod("set_uri", dbusURI, 0);
+  callDbusMethod("play", "", 0);
 
   // wait until we receive a stop message from the player
   bool eos = waitOnDbus();
@@ -220,11 +220,11 @@ void CMeegoPlayer::Pause()
 {
   if (m_paused == true) {
     m_paused = false;
-    callDbusMethod("play", "");
+    callDbusMethod("play", "", 0);
     m_callback.OnPlayBackResumed();
   } else {
     m_paused = true;
-    callDbusMethod("pause", "");
+    callDbusMethod("pause", "", 0);
     m_callback.OnPlayBackPaused();
   }
 }
@@ -419,7 +419,15 @@ bool CMeegoPlayer::waitOnDbus()
     message = dbus_connection_pop_message(connection);
 
     /* loop again if we haven't read a message */
-    if (message != NULL) {
+    if (message == NULL) {
+      if (m_speed != m_old_speed) {
+          CLog::Log(LOGDEBUG,"Meego dbus player: m_speed is : %d", m_speed);
+          callDbusMethod ("set_rate", "", m_speed);
+          m_old_speed = m_speed;
+      }
+      Sleep(100);
+    }
+    else {
       CLog::Log(LOGDEBUG,"Meego dbus player: Received signal from dbus");
       if (dbus_message_is_signal (message, UPLAYER_BUS_NAME, "emitEOSSignal")) {
         /* we are EOF */
@@ -427,20 +435,16 @@ bool CMeegoPlayer::waitOnDbus()
         CLog::Log(LOGNOTICE,"Meego dbus player: EOF received");
       } else if (dbus_message_is_signal (message, UPLAYER_BUS_NAME, "emitNewURI")) {
         CLog::Log(LOGDEBUG,"Meego dbus player: New URI signal received");
-        //m_bIsPlaying = false;
-        //eos = false;
       } else {
         CLog::Log(LOGNOTICE,"Meego dbus player: Signal received but not recognised");
       }
       dbus_message_unref(message);
-    } else {
-      Sleep(100);
     }
   }
   return eos;
 }
 
-void CMeegoPlayer::callDbusMethod(CStdString method, CStdString value)
+void CMeegoPlayer::callDbusMethod(CStdString method, CStdString value, dbus_int32_t speed)
 {
   DBusMessage *message;
   DBusMessage *reply;
@@ -454,7 +458,10 @@ void CMeegoPlayer::callDbusMethod(CStdString method, CStdString value)
                                           UPLAYER_BUS_PATH,
                                           UPLAYER_BUS_NAME,
                                           method.c_str());
-  if (method.compare("set_uri") == 0) {
+  if (method.compare("set_rate") == 0) {
+    dbus_message_append_args (message, DBUS_TYPE_INT32, &speed, DBUS_TYPE_INVALID);
+    CLog::Log(LOGDEBUG, "Meego dbus player: set_rate %d message will be sent", speed);
+  } if (method.compare("set_uri") == 0) {
     const char *valueC = value.c_str();
     dbus_message_append_args (message, DBUS_TYPE_STRING, &valueC,
         DBUS_TYPE_INVALID);
