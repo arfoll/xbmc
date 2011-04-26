@@ -824,20 +824,9 @@ void CGUIWindowFullScreen::FrameMove()
 
 void CGUIWindowFullScreen::Render()
 {
-  /* Too many calls so disabled for now */
-  //CLog::Log(LOGDEBUG,"Drawing Magic Pink Video square");
-  /* Draw a magic pink 1080p square - our max resolution on CE4100 */
-  glBegin( GL_QUADS );
-  {
-    /* We actually use a very close shade of black so that our PNG blending looks ok */
-    glColor4f( 1.0f, 0.0f, 1.0f, 1.0f );
-    glVertex2f( 0.0f, 0.0f );
-    glVertex2f( 0.0f, 1080.0f );
-    glVertex2f( 1920.0f, 1080.0f );
-    glVertex2f( 1920.0f, 0.0f );
-  }
-  glEnd();
-  glDisable( GL_TEXTURE_2D );
+  //Clear the display with our chroma colour
+  glClearColor(1.0f, 0.0f, 1.0f, 1.0f);
+  glClear (GL_COLOR_BUFFER_BIT);
 
   if (g_application.m_pPlayer)
     RenderTTFSubtitles();
