@@ -19,7 +19,6 @@
  *
  */
 
-#include "system.h"
 #include "GUIWindowFullScreen.h"
 #include "Application.h"
 #include "Util.h"
@@ -540,7 +539,6 @@ bool CGUIWindowFullScreen::OnMessage(CGUIMessage& message)
         return true;
       }
       CLog::Log(LOGINFO, "Set Chroma to Full");
-      system("echo 'GDL_PLANE_ALPHA_GLOBAL 255' | /usr/lib/gdl/gdl_samples/cfgplane UPP_C"); 
       g_infoManager.SetShowInfo(false);
       g_infoManager.SetShowCodec(false);
       m_bShowCurrentTime = false;
@@ -584,7 +582,6 @@ bool CGUIWindowFullScreen::OnMessage(CGUIMessage& message)
       /* Check this is a half chroma case*/
       if (g_application.IsPlayingVideo()) {
         CLog::Log(LOGINFO, "Set Chroma to 180");
-        system("echo 'GDL_PLANE_ALPHA_GLOBAL 180' | /usr/lib/gdl/gdl_samples/cfgplane UPP_C");
       }
 
       CGUIDialog *pDialog = (CGUIDialog *)g_windowManager.GetWindow(WINDOW_DIALOG_OSD_TELETEXT);
@@ -824,9 +821,27 @@ void CGUIWindowFullScreen::FrameMove()
 
 void CGUIWindowFullScreen::Render()
 {
-  //Clear the display with our chroma colour
-  glClearColor(1.0f, 0.0f, 1.0f, 1.0f);
-  glClear (GL_COLOR_BUFFER_BIT);
+  /* Too many calls so disabled for now */
+  //CLog::Log(LOGDEBUG,"Drawing Magic Pink Video square");
+  /* Draw a magic pink 1080p square - our max resolution on CE4100 */
+  glEnable (GL_BLEND);
+  glBlendFunc (GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
+  glShadeModel (GL_FLAT);
+  glClearColor (0.0, 0.0, 0.0, 0.0);
+  glClear(GL_COLOR_BUFFER_BIT);
+  glColor4f( 1.0f, 0.0f, 0.0f, 0.0f );
+
+  glBegin( GL_QUADS );
+  {
+    /* We actually use a very close shade of black so that our PNG blending looks ok */
+    glVertex2f( 0.0f, 0.0f );
+    glVertex2f( 0.0f, 1080.0f );
+    glVertex2f( 1920.0f, 1080.0f );
+    glVertex2f( 1920.0f, 0.0f );
+  }
+  glEnd();
+  glFlush();
+  glDisable( GL_TEXTURE_2D );
 
   if (g_application.m_pPlayer)
     RenderTTFSubtitles();

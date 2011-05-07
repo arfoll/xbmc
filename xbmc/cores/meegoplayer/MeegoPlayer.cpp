@@ -19,7 +19,6 @@
  *
  */
 
-#include "system.h"
 #include "signal.h"
 #include "limits.h"
 #include "SingleLock.h"
@@ -50,8 +49,6 @@
 #define UPLAYER_BUS_NAME "uk.co.madeo.uplayer"
 // The player bus path
 #define UPLAYER_BUS_PATH "/uk/co/madeo/uplayer"
-// GDL sample cfgplane
-#define CFGPLANE "/usr/lib/gdl/gdl_samples/cfgplane"
 // DBUS reply timeout
 #define DBUS_REPLY_TIMEOUT -1
 
@@ -179,10 +176,6 @@ void CMeegoPlayer::Process()
     }
   }
 
-  // fix for flash player to clean the screen properly - resets screen A and B
-  system("echo '' | "CFGPLANE" UPP_B -r");
-  system("echo 'GDL_PLANE_VID_MISMATCH_POLICY GDL_VID_POLICY_RESIZE' | "CFGPLANE" UPP_A");
-
   CLog::Log(LOGNOTICE, "Meego dbus player: URI sent to dbus player is : %s", dbusURI.c_str());
   callDbusMethod("set_uri", dbusURI, 0);
   callDbusMethod("play", "", 0);
@@ -212,8 +205,6 @@ void CMeegoPlayer::Process()
     m_callback.OnPlayBackEnded();
   }
 
-  /* Make sure UPP_C is fully visible */
-  system("echo 'GDL_PLANE_ALPHA_GLOBAL 255' | "CFGPLANE"  UPP_C");
 }
 
 void CMeegoPlayer::Pause()
