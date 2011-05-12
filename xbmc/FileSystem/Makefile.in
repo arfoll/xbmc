@@ -48,7 +48,6 @@ SRCS=AddonsDirectory.cpp \
      HTSPDirectory.cpp \
      HTSPSession.cpp \
      HDDirectory.cpp \
-     HDHomeRun.cpp \
      IDirectory.cpp \
      IFile.cpp \
      iso9660.cpp \

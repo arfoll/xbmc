@@ -70,7 +70,6 @@
 #include "MultiPathFile.h"
 #include "../utils/Network.h"
 #include "FileTuxBox.h"
-#include "HDHomeRun.h"
 #include "Application.h"
 #include "URL.h"
 #include "utils/log.h"
@@ -128,7 +127,6 @@ IFile* CFileFactory::CreateLoader(const CURL& url)
     else if (strProtocol == "shout") return new CFileShoutcast();
     else if (strProtocol == "lastfm") return new CFileLastFM();
     else if (strProtocol == "tuxbox") return new CFileTuxBox();
-    else if (strProtocol == "hdhomerun") return new CFileHomeRun();
 #ifdef HAS_FILESYSTEM_SMB
 #ifdef _WIN32
     else if (strProtocol == "smb") return new CWINFileSMB();

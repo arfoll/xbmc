@@ -46,7 +46,6 @@ XBMCTEX_DIRS= \
 LIB_DIRS=\
 	xbmc/lib/cximage-6.0 \
 	xbmc/lib/libexif \
-	xbmc/lib/libhdhomerun \
         xbmc/lib/libid3tag \
 	xbmc/lib/libapetag \
 	xbmc/lib/libPython/linux \
@@ -245,8 +244,6 @@ python: dllloader
 eventclients:
 libexif: dllloader
 	$(MAKE) -C xbmc/lib/libexif
-libhdhomerun: dllloader
-	$(MAKE) -C xbmc/lib/libhdhomerun
 libid3tag: dllloader
 	$(MAKE) -C xbmc/lib/libid3tag
 imagelib: dllloader
@@ -254,9 +251,9 @@ imagelib: dllloader
 
 codecs: papcodecs dvdpcodecs
 ifeq ($(findstring osx,$(ARCH)), osx)
-libs: libhdhomerun libid3tag imagelib libexif python system/libcpluff-$(ARCH).so
+libs: libid3tag imagelib libexif python system/libcpluff-$(ARCH).so
 else
-libs: libhdhomerun libid3tag imagelib libexif python system/libcpluff-$(ARCH).so
+libs: libid3tag imagelib libexif python system/libcpluff-$(ARCH).so
 endif
 externals: codecs libs python visualizations screensavers
 

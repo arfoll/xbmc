@@ -129,7 +129,6 @@ public:
   bool IsFileFolder() const;
   bool IsRemovable() const;
   bool IsTuxBox() const;
-  bool IsHDHomeRun() const;
   bool IsVTP() const;
   bool IsLiveTV() const;
   bool IsRSS() const;

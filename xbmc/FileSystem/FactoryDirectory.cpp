@@ -85,7 +85,6 @@
 #include "RarDirectory.h"
 #endif
 #include "DirectoryTuxBox.h"
-#include "HDHomeRun.h"
 #include "FileItem.h"
 #include "URL.h"
 #include "RSSDirectory.h"
@@ -171,7 +170,6 @@ IDirectory* CFactoryDirectory::Create(const CStdString& strPath)
 #ifdef HAS_UPNP
     if (strProtocol == "upnp") return new CUPnPDirectory();
 #endif
-    if (strProtocol == "hdhomerun") return new CDirectoryHomeRun();
     if (strProtocol == "rss") return new CRSSDirectory();
 #ifdef HAS_FILESYSTEM_SAP
     if (strProtocol == "sap") return new CSAPDirectory();

@@ -1136,11 +1136,6 @@ bool CUtil::IsTuxBox(const CStdString& strFile)
   return strFile.Left(7).Equals("tuxbox:");
 }
 
-bool CUtil::IsHDHomeRun(const CStdString& strFile)
-{
-  return strFile.Left(10).Equals("hdhomerun:");
-}
-
 bool CUtil::IsVTP(const CStdString& strFile)
 {
   return strFile.Left(4).Equals("vtp:");
@@ -1155,7 +1150,6 @@ bool CUtil::IsLiveTV(const CStdString& strFile)
 {
   if(IsTuxBox(strFile)
   || IsVTP(strFile)
-  || IsHDHomeRun(strFile)
   || IsHTSP(strFile)
   || strFile.Left(4).Equals("sap:"))
     return true;
@@ -1446,7 +1440,6 @@ void CUtil::CacheSubtitles(const CStdString& strMovie, CStdString& strExtensionC
 
   CFileItem item(strMovie, false);
   if (item.IsInternetStream()) return ;
-  if (item.IsHDHomeRun()) return ;
   if (item.IsPlayList()) return ;
   if (!item.IsVideo()) return ;
 

@@ -101,7 +101,6 @@ public:
   static bool IsAddonsPath(const CStdString& strFile);
   static bool IsCDDA(const CStdString& strFile);
   static bool IsTuxBox(const CStdString& strFile);
-  static bool IsHDHomeRun(const CStdString& strFile);
   static bool IsVTP(const CStdString& strFile);
   static bool IsHTSP(const CStdString& strFile);
   static bool IsLiveTV(const CStdString& strFile);

@@ -464,7 +464,7 @@ bool CFileItem::IsVideo() const
   if (HasMusicInfoTag()) return false;
   if (HasPictureInfoTag()) return false;
 
-  if (IsHDHomeRun() || IsTuxBox() || CUtil::IsDVD(m_strPath))
+  if (IsTuxBox() || CUtil::IsDVD(m_strPath))
     return true;
 
   CStdString extension;
@@ -748,11 +748,6 @@ bool CFileItem::IsDAAP() const
 bool CFileItem::IsTuxBox() const
 {
   return CUtil::IsTuxBox(m_strPath);
-}
-
-bool CFileItem::IsHDHomeRun() const
-{
-  return CUtil::IsHDHomeRun(m_strPath);
 }
 
 bool CFileItem::IsVTP() const

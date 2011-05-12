@@ -1186,7 +1186,6 @@ OUTPUT_FILES="Makefile \
     xbmc/lib/libRTV/Makefile \
     xbmc/lib/libexif/Makefile \
     xbmc/lib/libXDAAP/Makefile \
-    xbmc/lib/libhdhomerun/Makefile \
     xbmc/lib/libhttpapi/Makefile \
     lib/jsoncpp/jsoncpp/src/lib_json/Makefile \
     xbmc/lib/libjsonrpc/Makefile \
