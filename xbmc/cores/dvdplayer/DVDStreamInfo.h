@@ -25,10 +25,7 @@
   #include "config.h"
 #endif
 #ifndef _LINUX
-enum StreamType;
-enum CodecID;
 #else
-#include "DVDDemuxers/DVDDemux.h"
 extern "C" {
 #if (defined USE_EXTERNAL_FFMPEG)
   #if (defined HAVE_LIBAVCODEC_AVCODEC_H)
@@ -37,7 +34,6 @@ extern "C" {
     #include <ffmpeg/avcodec.h>
   #endif
 #else
-  #include "libavcodec/avcodec.h"
 #endif
 }
 #endif
@@ -60,8 +56,6 @@ public:
   void Assign(const CDVDStreamInfo &right, bool withextradata);
   void Assign(const CDemuxStream &right, bool withextradata);
 
-  CodecID codec;
-  StreamType type;
   bool software;  //force software decoding
 
 

@@ -36,7 +36,7 @@
 #define HAS_DVD_SWSCALE
 #define HAS_DVDPLAYER
 #define HAS_EVENT_SERVER
-#define HAS_KARAOKE
+//#define HAS_KARAOKE
 #define HAS_SCREENSAVER
 #define HAS_PYTHON
 #define HAS_SYSINFO
@@ -52,10 +52,10 @@
 #define HAS_JSONRPC
 #define HAS_HTTPAPI
 
-#define HAS_CDDA_RIPPER
-#ifdef USE_ASAP_CODEC
-#define HAS_ASAP_CODEC
-#endif
+//#define HAS_CDDA_RIPPER
+//#ifdef USE_ASAP_CODEC
+//#define HAS_ASAP_CODEC
+//#endif
 
 #define HAS_FILESYSTEM
 #define HAS_FILESYSTEM_SMB

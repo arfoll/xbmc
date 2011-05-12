@@ -33,8 +33,6 @@
 #include "DVDPlayerSubtitle.h"
 #include "DVDPlayerTeletext.h"
 
-//#include "DVDChapterReader.h"
-#include "DVDSubtitles/DVDFactorySubtitle.h"
 #include "utils/BitstreamStats.h"
 
 #include "Edl.h"
@@ -59,29 +57,16 @@ public:
   int              id;     // demuxerid of current playing stream
   int              source;
   double           dts;    // last dts from demuxer, used to find disncontinuities
-  CDVDStreamInfo   hint;   // stream hints, used to notice stream changes
   void*            stream; // pointer or integer, identifying stream playing. if it changes stream changed
   bool             inited;
   bool             started; // has the player started
-  const StreamType type;
   // stuff to handle starting after seek
   double   startpts;
   CDVDMsg* startsync;
 
-  CCurrentStream(StreamType t)
-    : type(t)
-  {
-    startsync = NULL;
-    Clear();
-  }
-
   void Clear()
   {
     id     = -1;
-    source = STREAM_SOURCE_NONE;
-    dts    = DVD_NOPTS_VALUE;
-    hint.Clear();
-    stream = NULL;
     inited = false;
     started = false;
     if(startsync)
@@ -90,44 +75,6 @@ public:
     startpts  = DVD_NOPTS_VALUE;
   }
 };
-
-typedef struct
-{
-  StreamType   type;
-  std::string  filename;
-  std::string  language;
-  std::string  name;
-  CDemuxStream::EFlags flags;
-  int          source;
-  int          id;
-} SelectionStream;
-
-class CSelectionStreams
-{
-  CCriticalSection m_section;
-  SelectionStream  m_invalid;
-public:
-  CSelectionStreams()
-  {
-    m_invalid.id = -1;
-    m_invalid.source = STREAM_SOURCE_NONE;
-    m_invalid.type = STREAM_NONE;
-  }
-  std::vector<SelectionStream> m_Streams;
-
-  int              IndexOf (StreamType type, int source, int id);
-  int              IndexOf (StreamType type, CDVDPlayer& p);
-  int              Count   (StreamType type) { return IndexOf(type, STREAM_SOURCE_NONE, -1) + 1; }
-  SelectionStream& Get     (StreamType type, int index);
-  bool             Get     (StreamType type, CDemuxStream::EFlags flag, SelectionStream& out);
-
-  void             Clear   (StreamType type, StreamSource source);
-  int              Source  (StreamSource source, std::string filename);
-
-  void             Update  (SelectionStream& s);
-  void             Update  (CDVDInputStream* input, CDVDDemux* demuxer);
-};
-
 
 #define DVDPLAYER_AUDIO    1
 #define DVDPLAYER_VIDEO    2
@@ -244,13 +191,6 @@ protected:
   bool CloseSubtitleStream(bool bKeepOverlays);
   bool CloseTeletextStream(bool bWaitForBuffers);
 
-  void ProcessPacket(CDemuxStream* pStream, DemuxPacket* pPacket);
-  void ProcessAudioData(CDemuxStream* pStream, DemuxPacket* pPacket);
-  void ProcessVideoData(CDemuxStream* pStream, DemuxPacket* pPacket);
-  void ProcessSubData(CDemuxStream* pStream, DemuxPacket* pPacket);
-  void ProcessTeletextData(CDemuxStream* pStream, DemuxPacket* pPacket);
-
-  int  AddSubtitleFile(const std::string& filename, CDemuxStream::EFlags flags = CDemuxStream::FLAG_NONE);
   /**
    * one of the DVD_PLAYSPEED defines
    */
@@ -268,15 +208,12 @@ protected:
   void SynchronizePlayers(DWORD sources);
   void SynchronizeDemuxer(DWORD timeout);
   void CheckAutoSceneSkip();
-  void CheckContinuity(CCurrentStream& current, DemuxPacket* pPacket);
   bool CheckSceneSkip(CCurrentStream& current);
   bool CheckPlayerInit(CCurrentStream& current, unsigned int source);
   bool CheckStartCaching(CCurrentStream& current);
   void SendPlayerMessage(CDVDMsg* pMsg, unsigned int target);
 
-  bool ReadPacket(DemuxPacket*& packet, CDemuxStream*& stream);
   bool IsValidStream(CCurrentStream& stream);
-  bool IsBetterStream(CCurrentStream& current, CDemuxStream* stream);
 
   bool OpenInputStream();
   bool OpenDemuxStream();
@@ -297,8 +234,6 @@ protected:
   CCurrentStream m_CurrentVideo;
   CCurrentStream m_CurrentSubtitle;
   CCurrentStream m_CurrentTeletext;
-
-  CSelectionStreams m_SelectionStreams;
 
   int m_playSpeed;
   struct SSpeedState

@@ -22,7 +22,6 @@
 #pragma once
 
 #include "MusicFileDirectory.h"
-#include "cores/paplayer/DllASAP.h"
 
 namespace XFILE
 {
@@ -32,7 +31,6 @@ namespace XFILE
     CASAPFileDirectory(void);
     virtual ~CASAPFileDirectory(void);
   private:
-    DllASAP m_dll;
     virtual int GetTrackCount(const CStdString& strPath);
   };
 }

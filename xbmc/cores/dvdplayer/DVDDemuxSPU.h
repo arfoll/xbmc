@@ -21,8 +21,8 @@
  *
  */
 
-#include "DVDCodecs/Video/DVDVideoCodec.h"
-#include "DVDCodecs/Overlay/DVDOverlaySpu.h"
+#include "../../linux/PlatformDefs.h"
+
 struct AVPicture;
 
 typedef struct SPUData
@@ -44,10 +44,10 @@ public:
   CDVDDemuxSPU();
   virtual ~CDVDDemuxSPU();
 
-  CDVDOverlaySpu* AddData(BYTE* data, int iSize, double pts); // returns a packet from ParsePacket if possible
+  char* AddData(BYTE* data, int iSize, double pts); // returns a packet from ParsePacket if possible
 
-  CDVDOverlaySpu* ParseRLE(CDVDOverlaySpu* pSPU, BYTE* pUnparsedData);
-  void FindSubtitleColor(int last_color, int stats[4], CDVDOverlaySpu* pSPU);
+  char* ParseRLE(char* pSPU, BYTE* pUnparsedData);
+  void FindSubtitleColor(int last_color, int stats[4], char* pSPU);
   bool CanDisplayWithAlphas(int a[4], int stats[4]);
 
   void Reset();
@@ -60,7 +60,7 @@ public:
   bool m_bHasClut;
 
 protected:
-  CDVDOverlaySpu* ParsePacket(SPUData* pSPUData);
+  char* ParsePacket(SPUData* pSPUData);
 
   SPUData m_spuData;
 };

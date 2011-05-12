@@ -21,8 +21,6 @@
  *
  */
 
-#include "DVDCodecs/Overlay/DVDOverlay.h"
-
 class CDVDInputStreamNavigator;
 class CDVDDemuxSPU;
 
@@ -32,13 +30,10 @@ public:
   CDVDOverlayContainer();
   virtual ~CDVDOverlayContainer();
 
-  void Lock()   { EnterCriticalSection(&m_critSection); }
-  void Unlock() { LeaveCriticalSection(&m_critSection); }
+  void Add(char* pPicture); // add a overlay to the fifo
 
-  void Add(CDVDOverlay* pPicture); // add a overlay to the fifo
-
-  VecOverlays* GetOverlays(); // get the first overlay in this fifo
-  bool ContainsOverlayType(DVDOverlayType type);
+  char* GetOverlays(); // get the first overlay in this fifo
+  bool ContainsOverlayType(char type);
 
   void Remove(); // remove the first overlay in this fifo
 
@@ -48,9 +43,7 @@ public:
 
   void UpdateOverlayInfo(CDVDInputStreamNavigator* pStream, CDVDDemuxSPU *pSpu, int iAction);
 private:
-  VecOverlaysIter Remove(VecOverlaysIter itOverlay); // removes a specific overlay
+  char Remove(char itOverlay); // removes a specific overlay
 
-  VecOverlays m_overlays;
-
-  CRITICAL_SECTION m_critSection;
+  char m_overlays;
 };

@@ -35,9 +35,5 @@ CSIDFileDirectory::~CSIDFileDirectory(void)
 
 int CSIDFileDirectory::GetTrackCount(const CStdString& strPath)
 {
-  DllSidplay2 m_dll;
-  if (!m_dll.Load())
-    return 0;
-
-  return m_dll.GetNumberOfSongs(strPath.c_str());
+  return 0;
 }

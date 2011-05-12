@@ -1,7 +1,4 @@
 INCLUDES=-I../../.. -I. -I.. -I../../ -I../../linux -I../../utils -I../../../guilib -I../../lib
-ifneq (@USE_EXTERNAL_FFMPEG@,1)
-  INCLUDES+=-ICodecs/ffmpeg
-endif
 
 CXXFLAGS+=-D__STDC_FORMAT_MACROS
 
@@ -19,7 +16,6 @@ SRCS=	DVDAudio.cpp \
 	DVDPlayerSubtitle.cpp \
 	DVDPlayerVideo.cpp \
 	DVDPlayerTeletext.cpp \
-	DVDStreamInfo.cpp \
 	DVDFileInfo.cpp \
 	DVDPlayerAudioResampler.cpp \
 	DVDTSCorrection.cpp \

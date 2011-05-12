@@ -21,7 +21,6 @@
  */
 
 #include "ImusicInfoTagLoader.h"
-#include "cores/paplayer/DllStSound.h"
 
 namespace MUSIC_INFO
 {
@@ -34,7 +33,6 @@ namespace MUSIC_INFO
       virtual bool Load(const CStdString& strFileName, CMusicInfoTag& tag);
     private:
       void* m_ym;
-      DllStSound m_dll;
   };
 }
 

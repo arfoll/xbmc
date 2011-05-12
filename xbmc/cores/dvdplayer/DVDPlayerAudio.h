@@ -25,8 +25,6 @@
 #include "DVDAudio.h"
 #include "DVDClock.h"
 #include "DVDMessageQueue.h"
-#include "DVDDemuxers/DVDDemuxUtils.h"
-#include "DVDStreamInfo.h"
 #include "BitstreamStats.h"
 #include "DVDPlayerAudioResampler.h"
 
@@ -37,8 +35,6 @@ class CDVDPlayer;
 class CDVDAudioCodec;
 class IAudioCallback;
 class CDVDAudioCodec;
-
-enum CodecID;
 
 #define DECODE_FLAG_DROP    1
 #define DECODE_FLAG_RESYNC  2
@@ -113,9 +109,6 @@ public:
   std::string GetPlayerInfo();
   int GetAudioBitrate();
 
-  // holds stream information for current playing stream
-  CDVDStreamInfo m_streaminfo;
-
   CDVDMessageQueue m_messageQueue;
   CDVDMessageQueue& m_messageParent;
   CPTSOutputQueue m_ptsOutput;
@@ -150,11 +143,6 @@ protected:
     {
       msg = msg2;
       msg->Acquire();
-      DemuxPacket* p = msg->GetPacket();
-      data = p->pData;
-      size = p->iSize;
-      dts = p->dts;
-
     }
     void Release()
     {

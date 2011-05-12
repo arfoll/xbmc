@@ -94,8 +94,6 @@
 #include "utils/log.h"
 #include "Picture.h"
 #include "JobManager.h"
-#include "cores/dvdplayer/DVDSubtitles/SamiTagConvertor.h"
-#include "cores/dvdplayer/DVDSubtitles/DVDSubtitleStream.h"
 
 using namespace std;
 using namespace XFILE;
@@ -1617,31 +1615,6 @@ void CUtil::CacheSubtitles(const CStdString& strMovie, CStdString& strExtensionC
 
     CStdString filename = GetFileName(items[i]->m_strPath);
     strLExt = filename.Right(filename.size()-8);
-    if (filename.Left(8).Equals("subtitle"))
-      vecExtensionsCached.push_back(strLExt);
-    if (CUtil::GetExtension(filename).Equals(".smi"))
-    {
-      //Cache multi-language sami subtitle
-      CDVDSubtitleStream* pStream = new CDVDSubtitleStream();
-      if(pStream->Open(items[i]->m_strPath))
-      {
-        SamiTagConvertor TagConv;
-        TagConv.LoadHead(pStream);
-        if (TagConv.m_Langclass.size() >= 2)
-        {
-          for (unsigned int k = 0; k < TagConv.m_Langclass.size(); k++)
-          {
-            strDest.Format("special://temp/subtitle.%s%s", TagConv.m_Langclass[k].Name, strLExt);
-            if (CFile::Cache(items[i]->m_strPath, strDest, pCallback, NULL))
-              CLog::Log(LOGINFO, " cached subtitle %s->%s\n", filename.c_str(), strDest.c_str());
-            CStdString strTemp;
-            strTemp.Format(".%s%s", TagConv.m_Langclass[k].Name, strLExt);
-            vecExtensionsCached.push_back(strTemp);
-          }
-        }
-      }
-      delete pStream;
-    }
   }
 
   // construct string of added exts

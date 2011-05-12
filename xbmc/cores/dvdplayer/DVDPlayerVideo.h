@@ -23,8 +23,6 @@
 
 #include "../../utils/Thread.h"
 #include "DVDMessageQueue.h"
-#include "DVDDemuxers/DVDDemuxUtils.h"
-#include "DVDCodecs/Video/DVDVideoCodec.h"
 #include "DVDClock.h"
 #include "DVDOverlayContainer.h"
 #include "DVDTSCorrection.h"
@@ -32,7 +30,6 @@
 #include "cores/VideoRenderers/RenderManager.h"
 #endif
 
-enum CodecID;
 class CDemuxStreamVideo;
 class CDVDOverlayCodecCC;
 
@@ -111,15 +108,9 @@ protected:
 #define EOS_DROPPED 2
 #define EOS_VERYLATE 4
 
-  void AutoCrop(DVDVideoPicture* pPicture);
-  void AutoCrop(DVDVideoPicture *pPicture, RECT &crop);
   CRect m_crop;
 
-  int OutputPicture(DVDVideoPicture* pPicture, double pts);
-#ifdef HAS_VIDEO_PLAYBACK
-  void ProcessOverlays(DVDVideoPicture* pSource, YV12Image* pDest, double pts);
-#endif
-  void ProcessVideoUserData(DVDVideoUserData* pVideoUserData, double pts);
+  int OutputPicture(char* pPicture, double pts);
 
   double m_iCurrentPts; // last pts displayed
   double m_iVideoDelay;
@@ -176,12 +167,7 @@ protected:
 
   BitstreamStats m_videoStats;
 
-  // classes
-  CDVDStreamInfo m_hints;
-  CDVDVideoCodec* m_pVideoCodec;
   CDVDOverlayCodecCC* m_pOverlayCodecCC;
-
-  DVDVideoPicture* m_pTempOverlayPicture;
 
   CPullupCorrection m_pullupCorrection;
 

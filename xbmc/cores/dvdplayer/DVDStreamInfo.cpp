@@ -21,9 +21,6 @@
 
 #include "DVDStreamInfo.h"
 
-#include "DVDCodecs/DVDCodecs.h"
-#include "DVDDemuxers/DVDDemux.h"
-
 CDVDStreamInfo::CDVDStreamInfo()                                                     { extradata = NULL; Clear(); }
 CDVDStreamInfo::CDVDStreamInfo(const CDVDStreamInfo &right, bool withextradata )     { extradata = NULL; Clear(); Assign(right, withextradata); }
 CDVDStreamInfo::CDVDStreamInfo(const CDemuxStream &right, bool withextradata )       { extradata = NULL; Clear(); Assign(right, withextradata); }

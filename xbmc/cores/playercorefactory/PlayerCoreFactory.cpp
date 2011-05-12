@@ -24,7 +24,6 @@
 #include "utils/SingleLock.h"
 #include "dvdplayer/DVDPlayer.h"
 #include "paplayer/PAPlayer.h"
-#include "paplayer/DVDPlayerCodec.h"
 #include "meegoplayer/MeegoPlayer.h"
 #include "GUIDialogContextMenu.h"
 #include "FileSystem/FileCurl.h"

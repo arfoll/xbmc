@@ -24,7 +24,6 @@
 #include "DVDAudio.h"
 #include "Util.h"
 #include "DVDClock.h"
-#include "DVDCodecs/DVDCodecs.h"
 #include "DVDPlayerAudio.h"
 #include "../AudioRenderers/AudioRendererFactory.h"
 
@@ -70,7 +69,7 @@ void CDVDAudio::UnRegisterAudioCallback()
   m_pCallback = NULL;
 }
 
-bool CDVDAudio::Create(const DVDAudioFrame &audioframe, CodecID codec)
+bool CDVDAudio::Create(const DVDAudioFrame &audioframe, int codec)
 {
   CLog::Log(LOGNOTICE, "Creating audio device with codec id: %i, channels: %i, sample rate: %i, %s", codec, audioframe.channels, audioframe.sample_rate, audioframe.passthrough ? "pass-through" : "no pass-through");
 

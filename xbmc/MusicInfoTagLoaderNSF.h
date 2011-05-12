@@ -21,7 +21,6 @@
  */
 
 #include "ImusicInfoTagLoader.h"
-#include "cores/paplayer/DllNosefart.h"
 
 namespace MUSIC_INFO
 {
@@ -35,7 +34,6 @@ namespace MUSIC_INFO
       virtual int GetStreamCount(const CStdString& strFileName);
     private:
       void* m_nsf;
-      DllNosefart m_dll;
   };
 }
 

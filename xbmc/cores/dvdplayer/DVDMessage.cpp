@@ -20,8 +20,6 @@
  */
 
 #include "DVDMessage.h"
-#include "DVDDemuxers/DVDDemuxUtils.h"
-#include "DVDStreamInfo.h"
 #include "utils/TimeUtils.h"
 
 /**
@@ -34,10 +32,6 @@ CDVDMsgGeneralStreamChange::CDVDMsgGeneralStreamChange(CDVDStreamInfo* pInfo) : 
 
 CDVDMsgGeneralStreamChange::~CDVDMsgGeneralStreamChange()
 {
-  if (m_pInfo)
-  {
-    delete m_pInfo;
-  }
 }
 
 /**
@@ -69,17 +63,3 @@ void CDVDMsgGeneralSynchronize::Wait(volatile bool *abort, DWORD source)
     while( m_objects < GetNrOfReferences() && timeout > CTimeUtils::GetTimeMS() ) Sleep(1);
 }
 
-/**
- * CDVDMsgDemuxerPacket --- DEMUXER_PACKET
- */
-CDVDMsgDemuxerPacket::CDVDMsgDemuxerPacket(DemuxPacket* packet, bool drop) : CDVDMsg(DEMUXER_PACKET)
-{
-  m_packet = packet;
-  m_drop   = drop;
-}
-
-CDVDMsgDemuxerPacket::~CDVDMsgDemuxerPacket()
-{
-  if (m_packet)
-    CDVDDemuxUtils::FreeDemuxPacket(m_packet);
-}

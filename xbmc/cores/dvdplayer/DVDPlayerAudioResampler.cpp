@@ -76,8 +76,6 @@ void CDVDPlayerResampler::Add(DVDAudioFrame &audioframe, double pts)
 
   //resample
   m_converterdata.src_ratio = m_ratio;
-  src_set_ratio(m_converter, m_ratio);
-  src_process(m_converter, &m_converterdata);
 
   //calculate a pts for each sample
   for (int i = 0; i < m_converterdata.output_frames_gen; i++)
@@ -129,7 +127,6 @@ void CDVDPlayerResampler::CheckResampleBuffers(int channels)
     Clean();
 
     m_nrchannels = channels;
-    m_converter = src_new(m_quality, m_nrchannels, &error);
   }
 }
 
@@ -163,7 +160,6 @@ void CDVDPlayerResampler::SetQuality(int quality)
 
 void CDVDPlayerResampler::Clean()
 {
-  if (m_converter) src_delete(m_converter);
   m_converter = NULL;
 
   free(m_buffer);

@@ -22,8 +22,6 @@
  */
 
 #include "DVDOverlayContainer.h"
-#include "DVDSubtitles/DVDFactorySubtitle.h"
-#include "DVDStreamInfo.h"
 #include "DVDMessageQueue.h"
 #include "DVDDemuxSPU.h"
 
@@ -61,7 +59,6 @@ private:
   CDVDOverlayCodec*   m_pOverlayCodec;
   CDVDDemuxSPU        m_dvdspus;
 
-  CDVDStreamInfo      m_streaminfo;
   double              m_lastPts;
 };
 

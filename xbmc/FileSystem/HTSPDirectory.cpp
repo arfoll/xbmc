@@ -24,15 +24,9 @@
 #include "FileItem.h"
 #include "GUISettings.h"
 #include "LocalizeStrings.h"
-#include "cores/dvdplayer/DVDInputStreams/DVDInputStreamHTSP.h"
 #include "utils/SingleLock.h"
 #include "utils/log.h"
 #include "utils/TimeUtils.h"
-
-extern "C" {
-#include "lib/libhts/htsmsg.h"
-#include "lib/libhts/htsmsg_binary.h"
-}
 
 using namespace XFILE;
 using namespace HTSP;
@@ -190,111 +184,18 @@ void CHTSPDirectorySession::Close()
 
 htsmsg_t* CHTSPDirectorySession::ReadResult(htsmsg_t* m)
 {
-  CSingleLock lock(m_section);
-  unsigned    seq (m_session.AddSequence());
-
-  SMessage &message(m_queue[seq]);
-  message.event = new CEvent();
-  message.msg   = NULL;
-
-  lock.Leave();
-  htsmsg_add_u32(m, "seq", seq);
-  if(!m_session.SendMessage(m))
-  {
-    m_queue.erase(seq);
-    return NULL;
-  }
-
-  if(!message.event->WaitMSec(2000))
-    CLog::Log(LOGERROR, "CHTSPDirectorySession::ReadResult - Timeout waiting for response");
-  lock.Enter();
-
-  m =    message.msg;
-  delete message.event;
-
-  m_queue.erase(seq);
-
-  return m;
+  return NULL;
 }
 
 bool CHTSPDirectorySession::GetEvent(SEvent& event, uint32_t id)
 {
-  if(id == 0)
-  {
-    event.Clear();
-    return false;
-  }
-
-  SEvents::iterator it = m_events.find(id);
-  if(it != m_events.end())
-  {
-    event = it->second;
-    return true;
-  }
-
-  htsmsg_t *msg = htsmsg_create_map();
-  htsmsg_add_str(msg, "method", "getEvent");
-  htsmsg_add_u32(msg, "eventId", id);
-  if((msg = ReadResult(msg)) == NULL)
-  {
-    CLog::Log(LOGDEBUG, "CHTSPSession::GetEvent - failed to get event %u", id);
-    return false;
-  }
-  if(!CHTSPSession::ParseEvent(msg, id, event))
-    return false;
-
-  m_events[id] = event;
-  return true;
+  event.Clear();
+  return false;
 }
 
 void CHTSPDirectorySession::Process()
 {
   CLog::Log(LOGDEBUG, "CHTSPDirectorySession::Process() - Starting");
-
-  htsmsg_t* msg;
-
-  while(!m_bStop)
-  {
-    if((msg = m_session.ReadMessage()) == NULL)
-      break;
-
-    uint32_t seq;
-    if(htsmsg_get_u32(msg, "seq", &seq) == 0)
-    {
-      CSingleLock lock(m_section);
-      SMessages::iterator it = m_queue.find(seq);
-      if(it != m_queue.end())
-      {
-        it->second.msg = msg;
-        it->second.event->Set();
-        continue;
-      }
-    }
-
-    const char* method;
-    if((method = htsmsg_get_str(msg, "method")) == NULL)
-    {
-      htsmsg_destroy(msg);
-      continue;
-    }
-
-    if     (strstr(method, "channelAdd"))
-      CHTSPSession::ParseChannelUpdate(msg, m_channels);
-    else if(strstr(method, "channelUpdate"))
-      CHTSPSession::ParseChannelUpdate(msg, m_channels);
-    else if(strstr(method, "channelRemove"))
-      CHTSPSession::ParseChannelRemove(msg, m_channels);
-    if     (strstr(method, "tagAdd"))
-      CHTSPSession::ParseTagUpdate(msg, m_tags);
-    else if(strstr(method, "tagUpdate"))
-      CHTSPSession::ParseTagUpdate(msg, m_tags);
-    else if(strstr(method, "tagRemove"))
-      CHTSPSession::ParseTagRemove(msg, m_tags);
-    else if(strstr(method, "initialSyncCompleted"))
-      m_started.Set();
-
-    htsmsg_destroy(msg);
-  }
 
   m_started.Set();
   CLog::Log(LOGDEBUG, "CHTSPDirectorySession::Process() - Exiting");

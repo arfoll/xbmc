@@ -31,7 +31,7 @@
 
 // include as less is possible to prevent dependencies
 #include "system.h"
-#include "DVDDemuxers/DVDDemux.h"
+#include "StdString.h"
 #include "DVDMessageTracker.h"
 
 #include <assert.h>
@@ -302,12 +302,10 @@ class CDVDMsgPlayerSeekChapter : public CDVDMsg
 class CDVDMsgDemuxerPacket : public CDVDMsg
 {
 public:
-  CDVDMsgDemuxerPacket(DemuxPacket* packet, bool drop = false);
+  CDVDMsgDemuxerPacket(bool drop = false);
   virtual ~CDVDMsgDemuxerPacket();
-  DemuxPacket* GetPacket()      { return m_packet; }
-  unsigned int GetPacketSize()  { if(m_packet) return m_packet->iSize; else return 0; }
+  unsigned int GetPacketSize()  { return 0; }
   bool         GetPacketDrop()  { return m_drop; }
-  DemuxPacket* m_packet;
   bool         m_drop;
 };
 
