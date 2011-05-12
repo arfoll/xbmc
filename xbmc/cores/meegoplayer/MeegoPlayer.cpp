@@ -160,12 +160,12 @@ void CMeegoPlayer::Process()
     /* Understood protocol going to meegoplayer as is */
     dbusURI = mainFile;
   }
-  else if (protocol != "http") {
-    /* local media */
+  else if (protocol == "musicdb") {
+    mainFile = CFileMusicDatabase::TranslateUrl(url);
     dbusURI = "file://";
     dbusURI.append(mainFile.c_str());
   }
-  else {
+  else if (protocol == "http") {
     /* http useragent detected */
     dbusURI = mainFile;
     size_t found;
@@ -174,6 +174,10 @@ void CMeegoPlayer::Process()
       /* remove the user agent */
       dbusURI.resize ((int) found);
     }
+  }
+  else {
+    dbusURI = "file://";
+    dbusURI.append(mainFile.c_str());
   }
 
   CLog::Log(LOGNOTICE, "Meego dbus player: URI sent to dbus player is : %s", dbusURI.c_str());
