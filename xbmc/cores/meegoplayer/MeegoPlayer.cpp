@@ -170,7 +170,7 @@ void CMeegoPlayer::Process()
     /* http useragent detected */
     dbusURI = mainFile;
     size_t found;
-    found = dbusURI.find("?|");
+    found = dbusURI.find("|");
     if ((int) found != (-1)) {
       /* remove the user agent */
       dbusURI.resize ((int) found);
