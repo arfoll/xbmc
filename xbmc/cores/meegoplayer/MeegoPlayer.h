@@ -49,7 +49,7 @@ public:
   virtual void Seek(bool bPlus, bool bLargeStep);
   virtual void SeekPercentage(float iPercent);
   virtual float GetPercentage();
-  virtual void SetVolume(long nVolume) {}
+  virtual void SetVolume(long nVolume);
   virtual void SetDynamicRangeCompression(long drc) {}
   virtual void SetContrast(bool bPlus) {}
   virtual void SetBrightness(bool bPlus) {}
@@ -108,6 +108,8 @@ private:
   bool m_pinkvideo;
   bool m_playOneStackItem;
   int m_playCountMinTime;
+  double m_volume;
+  bool m_volumeu;
 
   DBusConnection *connection;
   DBusError error;

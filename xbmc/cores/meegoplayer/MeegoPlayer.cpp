@@ -69,6 +69,7 @@ CMeegoPlayer::CMeegoPlayer(IPlayerCallback& callback)
   m_time = 0;
   m_waitTime = 0;
   m_pauseTime = 0;
+  m_volume = 1.0f;
 
   // by default this is a video player
   m_pinkvideo = true;
@@ -355,6 +356,21 @@ bool CMeegoPlayer::SetPlayerState(CStdString state)
   return true;
 }
 
+void CMeegoPlayer::SetVolume(long volume)
+{
+  if (volume == -6000) {
+    /* We are muted */
+    m_volume = 0;
+  } else {
+    m_volume = (double) volume / -10000;
+    /* Convert what XBMC gives into 0.0 -> 1.0 scale playbin2 uses */
+    m_volume = ((1 - m_volume) - 0.4) * 1.6666;
+  }
+
+  /* update the volume later */
+  m_volumeu = true;
+}
+
 /**
   This entire function is a little redundant.
   We should move to a Paplayer structure instead of a ExternalPlayer structure
@@ -421,6 +437,10 @@ bool CMeegoPlayer::waitOnDbus()
           callDbusMethod ("set_rate", "", m_speed);
           m_old_speed = m_speed;
           m_time = callDbusMethod ("get_position", "", 0);
+      } else if (m_volumeu) {
+          Sleep(100);
+          m_volumeu = false;
+          callDbusMethod ("set_volume", "", m_volume);
       }
       Sleep(100);
     }
@@ -469,6 +489,9 @@ int CMeegoPlayer::callDbusMethod(CStdString method, CStdString value, dbus_int32
   if (method.compare("set_rate") == 0) {
     dbus_message_append_args (message, DBUS_TYPE_INT32, &speed, DBUS_TYPE_INVALID);
     CLog::Log(LOGDEBUG, "Meego dbus player: set_rate %d message will be sent", speed);
+  } if (method.compare("set_volume") == 0) {
+    dbus_message_append_args (message, DBUS_TYPE_DOUBLE, &m_volume, DBUS_TYPE_INVALID);
+    CLog::Log(LOGDEBUG, "Meego dbus player: set_volume %f message will be sent", m_volume);
   } if (method.compare("set_uri") == 0) {
     const char *valueC = value.c_str();
     dbus_message_append_args (message, DBUS_TYPE_STRING, &valueC,
