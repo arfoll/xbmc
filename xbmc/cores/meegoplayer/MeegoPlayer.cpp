@@ -70,6 +70,7 @@ CMeegoPlayer::CMeegoPlayer(IPlayerCallback& callback)
   m_waitTime = 0;
   m_pauseTime = 0;
   m_volume = 1.0f;
+  m_volumeu = false;
 
   // by default this is a video player
   m_pinkvideo = true;
