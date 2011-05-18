@@ -465,7 +465,7 @@ void CGUISettings::Initialize()
   AddSeparator(in, "input.sep1");
 #endif
   AddBool(in, "input.remoteaskeyboard", 21449, false);
-  AddBool(in, "input.enablemouse", 21369, true);
+  AddBool(in, "input.enablemouse", 21369, false);
 
   CSettingsCategory* pwm = AddCategory(4, "powermanagement", 14095);
   // Note: Application.cpp might hide powersaving settings if not supported.
