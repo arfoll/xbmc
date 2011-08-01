@@ -864,8 +864,52 @@ void CGUIWindowFullScreen::Process(unsigned int currentTime, CDirtyRegionList &d
 
 void CGUIWindowFullScreen::Render()
 {
+#if (defined (IS_MEEGO_TV)) && (defined (HAS_GL))
+  glEnable (GL_BLEND);
+  glBlendFunc (GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
+  glShadeModel (GL_FLAT);
+  glClearColor (0.0, 0.0, 0.0, 0.0);
+  glClear(GL_COLOR_BUFFER_BIT);
+  glColor4f(1.0f, 0.0f, 0.0f, 0.0f);
+
+  glBegin( GL_QUADS );
+  {
+      glVertex2f(0.0f, 0.0f);
+      glVertex2f(0.0f, 1080.0f);
+      glVertex2f(1920.0f, 1080.0f);
+      glVertex2f(1920.0f, 0.0f);
+  }
+  glEnd();
+  glFlush();
+  glDisable(GL_TEXTURE_2D);
+#endif
+#if (defined IS_MEEGO_TV) && (HAS_GLES == 2)
+  glEnable (GL_BLEND);
+  glBlendFunc (GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
+  glShadeModel (GL_FLAT);
+  glClearColor (0.0, 0.0, 0.0, 0.0);
+  glClear(GL_COLOR_BUFFER_BIT);
+
+  GLfloat q3[] = { -0,0,
+                    0,1080,
+                    1920, 1080,
+                   -1920, 0 };
+
+  GLfloat col1[] = { 1.0f, 0.0f, 0.0f, 0.0f,
+                     1.0f, 0.0f, 0.0f, 0.0f
+                     1.0f, 0.0f, 0.0f, 0.0f
+                     1.0f, 0.0f, 0.0f, 0.0f};
+  
+  glEnableClientState(GL_VERTEX_ARRAY);
+  glVertexPointer(2, GL_FLOAT, 0, q3);
+  glColorPointer(2, GL_FLOAT, 0, col1);
+  glDrawArrays(GL_TRIANGLE_FAN,0,4);
+  glDisableClientState(GL_VERTEX_ARRAY);
+#endif
+#ifndef IS_MEEGO_TV
   if (g_application.m_pPlayer)
     RenderTTFSubtitles();
+#endif
   CGUIWindow::Render();
 }
 
