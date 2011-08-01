@@ -19,6 +19,7 @@
  *
  */
 
+#include "threads/SystemClock.h"
 #include "PlayListPlayer.h"
 #include "playlists/PlayListFactory.h"
 #include "Application.h"
@@ -31,6 +32,8 @@
 #include "utils/log.h"
 #include "utils/TimeUtils.h"
 #include "music/tags/MusicInfoTag.h"
+#include "dialogs/GUIDialogKaiToast.h"
+#include "guilib/LocalizeStrings.h"
 
 using namespace PLAYLIST;
 
@@ -157,9 +160,14 @@ bool CPlayListPlayer::PlayNext(int offset, bool bAutoPlay)
   CPlayList& playlist = GetPlaylist(m_iCurrentPlayList);
 
   if ((iSong < 0) || (iSong >= playlist.size()) || (playlist.GetPlayable() <= 0))
-    return false;
+  {
+    if(!bAutoPlay)
+      CGUIDialogKaiToast::QueueNotification(CGUIDialogKaiToast::Info, g_localizeStrings.Get(559), g_localizeStrings.Get(34201));
 
-  return Play(iSong, bAutoPlay);
+    return false;
+  }
+
+  return Play(iSong, false);
 }
 
 bool CPlayListPlayer::PlayPrevious()
@@ -168,15 +176,19 @@ bool CPlayListPlayer::PlayPrevious()
     return false;
 
   CPlayList& playlist = GetPlaylist(m_iCurrentPlayList);
-  if (playlist.size() <= 0) 
-    return false;
   int iSong = m_iCurrentSong;
 
   if (!RepeatedOne(m_iCurrentPlayList))
     iSong--;
 
-  if (iSong < 0)
+  if (iSong < 0 && Repeated(m_iCurrentPlayList))
     iSong = playlist.size() - 1;
+
+  if (iSong < 0 || playlist.size() <= 0)
+  {
+    CGUIDialogKaiToast::QueueNotification(CGUIDialogKaiToast::Info, g_localizeStrings.Get(559), g_localizeStrings.Get(34202));
+    return false;
+  }
 
   return Play(iSong, false, true);
 }
@@ -238,7 +250,7 @@ bool CPlayListPlayer::Play(int iSong, bool bAutoPlay /* = false */, bool bPlayPr
 
   m_bPlaybackStarted = false;
 
-  unsigned int playAttempt = CTimeUtils::GetTimeMS();
+  unsigned int playAttempt = XbmcThreads::SystemClockMillis();
   if (!g_application.PlayFile(*item, bAutoPlay))
   {
     CLog::Log(LOGERROR,"Playlist Player: skipping unplayable item: %i, path [%s]", m_iCurrentSong, item->m_strPath.c_str());
@@ -249,7 +261,7 @@ bool CPlayListPlayer::Play(int iSong, bool bAutoPlay /* = false */, bool bPlayPr
       m_failedSongsStart = playAttempt;
     m_iFailedSongs++;
     if ((m_iFailedSongs >= g_advancedSettings.m_playlistRetries && g_advancedSettings.m_playlistRetries >= 0)
-        || ((CTimeUtils::GetTimeMS() - m_failedSongsStart  >= (unsigned int)g_advancedSettings.m_playlistTimeout * 1000) && g_advancedSettings.m_playlistTimeout))
+        || ((XbmcThreads::SystemClockMillis() - m_failedSongsStart  >= (unsigned int)g_advancedSettings.m_playlistTimeout * 1000) && g_advancedSettings.m_playlistTimeout))
     {
       CLog::Log(LOGDEBUG,"Playlist Player: one or more items failed to play... aborting playback");
 

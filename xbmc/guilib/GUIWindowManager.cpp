@@ -33,7 +33,6 @@
 #include "addons/Skin.h"
 #include "GUITexture.h"
 #include "windowing/WindowingFactory.h"
-#include "utils/TimeUtils.h"
 
 using namespace std;
 
@@ -348,7 +347,10 @@ void CGUIWindowManager::ActivateWindow(int iWindowID, const vector<CStdString>& 
     g_application.getApplicationMessenger().ActivateWindow(iWindowID, params, swappingWindows);
   }
   else
+  {
+    CSingleLock lock(g_graphicsContext);
     ActivateWindow_Internal(iWindowID, params, swappingWindows);
+  }
 }
 
 void CGUIWindowManager::ActivateWindow_Internal(int iWindowID, const vector<CStdString>& params, bool swappingWindows)
@@ -397,7 +399,10 @@ void CGUIWindowManager::ActivateWindow_Internal(int iWindowID, const vector<CStd
   else if (pNewWindow->IsDialog())
   { // if we have a dialog, we do a DoModal() rather than activate the window
     if (!pNewWindow->IsDialogRunning())
+    {
+      CSingleExit exitit(g_graphicsContext);
       ((CGUIDialog *)pNewWindow)->DoModal(iWindowID, params.size() ? params[0] : "");
+    }
     return;
   }
 
@@ -630,12 +635,8 @@ void CGUIWindowManager::ProcessRenderLoop(bool renderOnly /*= false*/)
   {
     m_iNested++;
     if (!renderOnly)
-    {
       m_pCallback->Process();
-      m_pCallback->FrameMove();
-    } else {
-      Process(CTimeUtils::GetFrameTime());
-    }
+    m_pCallback->FrameMove(!renderOnly);
     m_pCallback->Render();
     m_iNested--;
   }

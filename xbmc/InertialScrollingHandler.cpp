@@ -20,17 +20,20 @@
  */
 
 
+#include "threads/SystemClock.h"
 #include "InertialScrollingHandler.h"
 #include "Application.h"
 #include "utils/TimeUtils.h"
 #include "guilib/Key.h"
 
+#include <cmath>
+
 //time for reaching velocitiy 0 in secs
-#define TIME_TO_ZERO_SPEED 1.0
+#define TIME_TO_ZERO_SPEED 1.0f
 //time for decreasing the deaccelleration (for doing a smooth stop) in secs
-#define TIME_FOR_DEACELLERATION_DECREASE 0.5
+#define TIME_FOR_DEACELLERATION_DECREASE 0.5f
 //the factor for decreasing the deacceleration
-#define DEACELLERATION_DECREASE_FACTOR 0.9
+#define DEACELLERATION_DECREASE_FACTOR 0.9f
 //minimum speed for doing inertial scroll is 50 pixels / s
 #define MINIMUM_SPEED_FOR_INERTIA 50
 
@@ -40,7 +43,7 @@ CInertialScrollingHandler::CInertialScrollingHandler()
 , m_iFlickVelocity(CPoint(0,0))
 , m_iLastGesturePoint(CPoint(0,0))
 , m_inertialDeacceleration(CPoint(0,0))
-, m_inertialStartTime(0.0) 
+, m_inertialStartTime(0)
 {
 }
 
@@ -104,7 +107,7 @@ bool CInertialScrollingHandler::ProcessInertialScroll(float frameTime)
     
     //decrease based on negativ acceleration
     //calc the overall inertial scrolling time in secs
-    float absolutInertialTime = (CTimeUtils::GetTimeMS() - m_inertialStartTime)/(float)1000;
+    float absolutInertialTime = (XbmcThreads::SystemClockMillis() - m_inertialStartTime)/(float)1000;
     
     //as long as we aren't over the overall inertial scroll time - do the deacceleration
     if ( absolutInertialTime < TIME_TO_ZERO_SPEED + TIME_FOR_DEACELLERATION_DECREASE )

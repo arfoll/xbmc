@@ -102,6 +102,8 @@ typedef struct
   CDemuxStream::EFlags flags;
   int          source;
   int          id;
+  std::string  codec;
+  int          channels;
 } SelectionStream;
 
 class CSelectionStreams
@@ -355,8 +357,8 @@ protected:
     }
 
     int state;                // current dvdstate
-    DWORD iDVDStillTime;      // total time in ticks we should display the still before continuing
-    DWORD iDVDStillStartTime; // time in ticks when we started the still
+    unsigned int iDVDStillTime;      // total time in ticks we should display the still before continuing
+    unsigned int iDVDStillStartTime; // time in ticks when we started the still
     int iSelectedSPUStream;   // mpeg stream id, or -1 if disabled
     int iSelectedAudioStream; // mpeg stream id, or -1 if disabled
   } m_dvd;
@@ -373,6 +375,7 @@ protected:
       dts           = DVD_NOPTS_VALUE;
       player_state  = "";
       chapter       = 0;
+      chapter_name  = "";
       chapter_count = 0;
       canrecord     = false;
       recording     = false;

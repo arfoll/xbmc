@@ -58,8 +58,16 @@ void CEvent::removeGroup(XbmcThreads::CEventGroup* group)
 //  CEvent::groupListMutex -> CEventGroup::mutex -> CEvent::mutex
 void CEvent::Set()
 {
-  // no locking necessary
-  signaled = true; 
+  // Originally I had this without locking. Thanks to FernetMenta who
+  // pointed out that this creates a race condition between setting
+  // checking the signal and calling wait() on the Wait call in the
+  // CEvent class. This now perfectly matches the boost example here:
+  // http://www.boost.org/doc/libs/1_41_0/doc/html/thread/synchronization.html#thread.synchronization.condvar_ref
+  {
+    CSingleLock slock(mutex);
+    signaled = true; 
+  }
+
   condVar.notifyAll();
 
   CSingleLock l(groupListMutex);
@@ -138,7 +146,7 @@ namespace XbmcThreads
     return ret;
   }
 
-  CEventGroup::CEventGroup(int num, CEvent* v1, ...) : signaled(NULL), condVar(signaled), numWaits(0)
+  CEventGroup::CEventGroup(int num, CEvent* v1, ...) : signaled(NULL), condVar(actualCv,signaled), numWaits(0)
   {
     va_list ap;
 
@@ -156,7 +164,7 @@ namespace XbmcThreads
       (*iter)->addGroup(this);
   }
 
-  CEventGroup::CEventGroup(CEvent* v1, ...) : signaled(NULL), condVar(signaled), numWaits(0)
+  CEventGroup::CEventGroup(CEvent* v1, ...) : signaled(NULL), condVar(actualCv,signaled), numWaits(0)
   {
     va_list ap;
 
