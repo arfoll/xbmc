@@ -71,6 +71,8 @@
   <string id="85">NW</string>
   <string id="86">NNW</string>
   <string id="87">VAR</string>
+  <string id="88">OpenCPN</string>
+  <string id="89">Apps</string>
 
   <string id="98">View: Auto</string>
   <string id="99">View: Auto big</string>
@@ -366,6 +368,8 @@
   <string id="404">Wind</string>
   <string id="405">Dew point</string>
   <string id="406">Humidity</string>
+  <string id="407">Clean Music Library...</string>
+  <string id="408">Clean Video Library...</string>
 
   <string id="409">Defaults</string>
   <string id="410">Accessing weather service</string>
@@ -1287,6 +1291,7 @@
   <string id="14034">DVD cache - DVD-ROM</string>
   <string id="14035">- Local Network</string>
   <string id="14036">Services</string>
+  <string id="14037">Library Control</string>
 
   <string id="14038">Network settings changed</string>
   <string id="14039">XBMC requires to restart to change your</string>

@@ -234,9 +234,13 @@ void CGUISettings::Initialize()
 {
   ZeroMemory(&m_replayGain, sizeof(ReplayGainSettings));
 
+#ifndef IS_MEEGO_TV
   // Pictures settings
   AddGroup(0, 1);
   CSettingsCategory* pic = AddCategory(0, "pictures", 14081);
+#else
+  CSettingsCategory* pic = NULL;
+#endif
   AddBool(pic, "pictures.usetags", 14082, true);
   AddBool(pic,"pictures.generatethumbs",13360,true);
   AddBool(pic, "pictures.useexifrotation", 20184, true);
@@ -255,16 +259,26 @@ void CGUISettings::Initialize()
   // My Weather settings
   AddGroup(2, 8);
   CSettingsCategory* wea = AddCategory(2, "weather", 16000);
-  AddString(wea, "weather.areacode1", 14019, "USNY0996 - New York, NY", BUTTON_CONTROL_STANDARD);
-  AddString(wea, "weather.areacode2", 14020, "UKXX0085 - London, United Kingdom", BUTTON_CONTROL_STANDARD);
-  AddString(wea, "weather.areacode3", 14021, "JAXX0085 - Tokyo, Japan", BUTTON_CONTROL_STANDARD);
+  AddString(wea, "weather.areacode1", 14019, "USMT0215 - Malta, MT", BUTTON_CONTROL_STANDARD);
+  AddString(wea, "weather.areacode2", 14020, "UKXX0029 - Canterbury, United Kingdom", BUTTON_CONTROL_STANDARD);
+  AddString(wea, "weather.areacode3", 14021, "FRBR0203 - Le Bono, France", BUTTON_CONTROL_STANDARD);
+#ifndef IS_MEEGO_TV
   AddSeparator(wea, "weather.sep1");
   AddDefaultAddon(wea, "weather.script", 24027, DEFAULT_WEATHER_ADDON, ADDON_SCRIPT_WEATHER);
   AddString(wea, "weather.scriptsettings", 21417, "", BUTTON_CONTROL_STANDARD, true);
+#endif
 
   // My Music Settings
+#ifndef IS_MEEGO_TV
   AddGroup(3, 2);
   CSettingsCategory* ml = AddCategory(3,"musiclibrary",14022);
+#else
+  AddGroup(3, 2);
+  CSettingsCategory* lc = AddCategory(3,"musiclibrary",14037);
+  AddString(lc, "musiclibrary.cleanup", 407, "", BUTTON_CONTROL_STANDARD);
+  AddString(lc, "musiclibrary.cleanup2", 408, "", BUTTON_CONTROL_STANDARD);
+  CSettingsCategory* ml = NULL;
+#endif
   AddBool(NULL, "musiclibrary.enabled", 418, true);
   AddBool(ml, "musiclibrary.showcompilationartists", 13414, true);
   AddSeparator(ml,"musiclibrary.sep1");
@@ -278,7 +292,11 @@ void CGUISettings::Initialize()
   AddString(ml, "musiclibrary.export", 20196, "", BUTTON_CONTROL_STANDARD);
   AddString(ml, "musiclibrary.import", 20197, "", BUTTON_CONTROL_STANDARD);
 
+#ifndef IS_MEEGO_TV
   CSettingsCategory* mp = AddCategory(3, "musicplayer", 14086);
+#else
+  CSettingsCategory* mp = NULL;
+#endif
   AddBool(mp, "musicplayer.autoplaynextitem", 489, true);
   AddBool(mp, "musicplayer.queuebydefault", 14084, false);
   AddSeparator(mp, "musicplayer.sep1");
@@ -296,7 +314,11 @@ void CGUISettings::Initialize()
   AddSeparator(mp, "musicplayer.sep3");
   AddDefaultAddon(mp, "musicplayer.visualisation", 250, DEFAULT_VISUALISATION, ADDON_VIZ);
 
+#ifndef IS_MEEGO_TV
   CSettingsCategory* mf = AddCategory(3, "musicfiles", 14081);
+#else
+  CSettingsCategory* mf = NULL;
+#endif
   AddBool(mf, "musicfiles.usetags", 258, true);
   AddString(mf, "musicfiles.trackformat", 13307, "[%N. ]%A - %T", EDIT_CONTROL_INPUT, false, 16016);
   AddString(mf, "musicfiles.trackformatright", 13387, "%D", EDIT_CONTROL_INPUT, false, 16016);
@@ -307,7 +329,11 @@ void CGUISettings::Initialize()
   AddString(NULL, "musicfiles.librarytrackformatright", 13387, "", EDIT_CONTROL_INPUT, false, 16016);
   AddBool(mf, "musicfiles.findremotethumbs", 14059, true);
 
+#ifndef IS_MEEGO_TV
   CSettingsCategory* scr = AddCategory(3, "scrobbler", 15221);
+#else
+  CSettingsCategory* scr = NULL;
+#endif
   AddBool(scr, "scrobbler.lastfmsubmit", 15201, false);
   AddBool(scr, "scrobbler.lastfmsubmitradio", 15250, false);
   AddString(scr,"scrobbler.lastfmusername", 15202, "", EDIT_CONTROL_INPUT, false, 15202);
@@ -317,7 +343,11 @@ void CGUISettings::Initialize()
   AddString(scr, "scrobbler.librefmusername", 15218, "", EDIT_CONTROL_INPUT, false, 15218);
   AddString(scr, "scrobbler.librefmpass", 15219, "", EDIT_CONTROL_MD5_INPUT, false, 15219);
 
+#ifndef IS_MEEGO_TV
   CSettingsCategory* acd = AddCategory(3, "audiocds", 620);
+#else
+  CSettingsCategory* acd = NULL;
+#endif
   AddBool(acd, "audiocds.autorun", 14085, false);
   AddBool(acd, "audiocds.usecddb", 227, true);
   AddSeparator(acd, "audiocds.sep1");
@@ -359,7 +389,11 @@ void CGUISettings::Initialize()
 
   // System settings
   AddGroup(4, 13000);
+#ifndef IS_MEEGO_TV
   CSettingsCategory* vs = AddCategory(4, "videoscreen", 21373);
+#else
+  CSettingsCategory* vs = NULL;
+#endif
 
 #if (defined(__APPLE__) && defined(__arm__))
   // define but hide display, resolution and blankdisplays settings on atv2/ios, they are not user controlled
@@ -405,7 +439,6 @@ void CGUISettings::Initialize()
   AddBool(vs, "videoscreen.blankdisplays", 13130, false);
   AddSeparator(vs, "videoscreen.sep1");
 #endif
-#endif
 
   map<int,int> vsync;
 #if defined(_LINUX) && !defined(__APPLE__)
@@ -425,7 +458,11 @@ void CGUISettings::Initialize()
   AddBool(NULL, "videoscreen.haslcd", 4501, false);
 #endif
 
+#ifndef IS_MEEGO_TV
   CSettingsCategory* ao = AddCategory(4, "audiooutput", 772);
+#else
+  CSettingsCategory* ao = NULL;
+#endif
 
   map<int,int> audiomode;
   audiomode.insert(make_pair(338,AUDIO_ANALOG));
@@ -472,6 +509,7 @@ void CGUISettings::Initialize()
 #elif defined(_WIN32)
   AddString(ao, "audiooutput.audiodevice", 545, "Default", SPIN_CONTROL_TEXT);
 #endif
+#endif
 
   CSettingsCategory* in = AddCategory(4, "input", 14094);
 #if defined(__APPLE__)
@@ -489,14 +527,22 @@ void CGUISettings::Initialize()
   AddInt(NULL, "input.appleremotesequencetime", 13603, 500, 50, 50, 1000, SPIN_CONTROL_INT_PLUS, MASK_MS, TEXT_OFF);
   AddSeparator(in, "input.sep1");
 #endif
+#ifdef IS_MEEGO_TV
+  AddBool(NULL, "input.remoteaskeyboard", 21449, false);
+#else
   AddBool(in, "input.remoteaskeyboard", 21449, false);
+#endif
 #if (defined(__APPLE__) && defined(__arm_))
   AddBool(NULL, "input.enablemouse", 21369, true);
 #else
-  AddBool(in, "input.enablemouse", 21369, true);
+  AddBool(in, "input.enablemouse", 21369, false);
 #endif
 
+#ifndef IS_MEEGO_TV
   CSettingsCategory* pwm = AddCategory(4, "powermanagement", 14095);
+#else
+  CSettingsCategory* pwm = NULL;
+#endif
   // Note: Application.cpp might hide powersaving settings if not supported.
   AddInt(pwm, "powermanagement.displaysoff", 1450, 0, 0, 5, 120, SPIN_CONTROL_INT_PLUS, MASK_MINS, TEXT_OFF);
   AddInt(pwm, "powermanagement.shutdowntime", 357, 0, 0, 5, 120, SPIN_CONTROL_INT_PLUS, MASK_MINS, TEXT_OFF);
@@ -520,12 +566,19 @@ void CGUISettings::Initialize()
     shutdown.insert(make_pair(13014,POWERSTATE_MINIMIZE));
     AddInt(pwm, "powermanagement.shutdownstate", 13008, POWERSTATE_QUIT, shutdown, SPIN_CONTROL_TEXT);
   }
-
+#ifndef IS_MEEGO_TV
   CSettingsCategory* dbg = AddCategory(4, "debug", 14092);
+#else
+  CSettingsCategory* dbg = NULL;
+#endif
   AddBool(dbg, "debug.showloginfo", 20191, false);
   AddPath(dbg, "debug.screenshotpath",20004,"select writable folder",BUTTON_CONTROL_PATH_INPUT,false,657);
 
+#ifndef IS_MEEGO_TV
   CSettingsCategory* mst = AddCategory(4, "masterlock", 12360);
+#else
+  CSettingsCategory* mst = NULL;
+#endif
   AddString(mst, "masterlock.lockcode"       , 20100, "-", BUTTON_CONTROL_STANDARD);
   AddBool(mst, "masterlock.startuplock"      , 20076,false);
   // hidden masterlock settings
@@ -548,22 +601,32 @@ void CGUISettings::Initialize()
   AddInt(NULL, "cacheunknown.internet", 14060, 4096, 0, 256, 16384, SPIN_CONTROL_INT_PLUS, MASK_KB, TEXT_OFF);
 
   // video settings
+#ifndef IS_MEEGO_TV
   AddGroup(5, 3);
   CSettingsCategory* vdl = AddCategory(5, "videolibrary", 14022);
+#else
+  CSettingsCategory* vdl = NULL;
+#endif
   AddBool(NULL, "videolibrary.enabled", 418, true);
-  AddBool(vdl, "videolibrary.showunwatchedplots", 20369, true);
+  AddBool(NULL, "videolibrary.showunwatchedplots", 20369, true);
   AddBool(NULL, "videolibrary.seasonthumbs", 20382, true);
-  AddBool(vdl, "videolibrary.actorthumbs", 20402, true);
-  AddInt(vdl, "videolibrary.flattentvshows", 20412, 1, 0, 1, 2, SPIN_CONTROL_TEXT);
+  AddBool(NULL, "videolibrary.actorthumbs", 20402, true);
+  AddInt(NULL, "videolibrary.flattentvshows", 20412, 1, 0, 1, 2, SPIN_CONTROL_TEXT);
   AddBool(NULL, "videolibrary.flattenmoviesets", 22002, false);
-  AddBool(vdl, "videolibrary.updateonstartup", 22000, false);
-  AddBool(vdl, "videolibrary.backgroundupdate", 22001, false);
-  AddSeparator(vdl, "videolibrary.sep3");
-  AddString(vdl, "videolibrary.cleanup", 334, "", BUTTON_CONTROL_STANDARD);
+  AddBool(NULL, "videolibrary.updateonstartup", 22000, true);
+  AddBool(NULL, "videolibrary.backgroundupdate", 22001, false);
+  AddSeparator(NULL, "videolibrary.sep3");
+//  AddString(vdl, "videolibrary.cleanup", 334, "", BUTTON_CONTROL_STANDARD);
+#ifndef IS_MEEGO_TV
   AddString(vdl, "videolibrary.export", 647, "", BUTTON_CONTROL_STANDARD);
   AddString(vdl, "videolibrary.import", 648, "", BUTTON_CONTROL_STANDARD);
+#endif
 
+#ifndef IS_MEEGO_TV
   CSettingsCategory* vp = AddCategory(5, "videoplayer", 14086);
+#else
+  CSettingsCategory* vp = NULL; 
+#endif
 
   map<int, int> renderers;
   renderers.insert(make_pair(13416, RENDER_METHOD_AUTO));
@@ -647,14 +710,22 @@ void CGUISettings::Initialize()
   AddSeparator(vp, "videoplayer.sep5");
   AddBool(vp, "videoplayer.teletextenabled", 23050, true);
 
+#ifndef IS_MEEGO_TV
   CSettingsCategory* vid = AddCategory(5, "myvideos", 14081);
+#else
+  CSettingsCategory* vid = NULL;
+#endif
   AddInt(vid, "myvideos.selectaction", 22079, SELECT_ACTION_PLAY_OR_RESUME, SELECT_ACTION_CHOOSE, 1, SELECT_ACTION_INFO, SPIN_CONTROL_TEXT);
   AddBool(NULL, "myvideos.treatstackasfile", 20051, true);
   AddBool(vid, "myvideos.extractflags",20433, true);
   AddBool(vid, "myvideos.cleanstrings", 20418, false);
   AddBool(NULL, "myvideos.extractthumb",20433, true);
 
+#ifndef IS_MEEGO_TV
   CSettingsCategory* sub = AddCategory(5, "subtitles", 287);
+#else
+  CSettingsCategory* sub = NULL;
+#endif
   AddString(sub, "subtitles.font", 14089, "arial.ttf", SPIN_CONTROL_TEXT);
   AddInt(sub, "subtitles.height", 289, 28, 16, 2, 74, SPIN_CONTROL_TEXT); // use text as there is a disk based lookup needed
   AddInt(sub, "subtitles.style", 736, FONT_STYLE_BOLD, FONT_STYLE_NORMAL, 1, FONT_STYLE_BOLD_ITALICS, SPIN_CONTROL_TEXT);
@@ -663,7 +734,11 @@ void CGUISettings::Initialize()
   AddSeparator(sub, "subtitles.sep1");
   AddPath(sub, "subtitles.custompath", 21366, "", BUTTON_CONTROL_PATH_INPUT, false, 657);
 
+#ifndef IS_MEEGO_TV
   CSettingsCategory* dvd = AddCategory(5, "dvds", 14087);
+#else
+  CSettingsCategory* dvd = NULL;
+#endif
   AddBool(dvd, "dvds.autorun", 14088, false);
   AddInt(dvd, "dvds.playerregion", 21372, 0, 0, 1, 8, SPIN_CONTROL_INT_PLUS, -1, TEXT_OFF);
   AddBool(dvd, "dvds.automenu", 21882, false);
@@ -673,22 +748,26 @@ void CGUISettings::Initialize()
   AddDefaultAddon(NULL, "scrapers.musicvideosdefault", 21415, "metadata.mtv.com", ADDON_SCRAPER_MUSICVIDEOS);
   AddBool(NULL, "scrapers.langfallback", 21416, false);
 
+#ifndef IS_MEEGO_TV
   // network settings
   AddGroup(6, 705);
 
   CSettingsCategory* srv = AddCategory(6, "services", 14036);
-  AddBool(srv, "services.upnpserver", 21360, false);
-  AddBool(srv, "services.upnprenderer", 21881, false);
+#else
+  CSettingsCategory* srv = NULL;
+#endif
+  AddBool(srv, "services.upnpserver", 21360, true);
+  AddBool(srv, "services.upnprenderer", 21881, true);
   AddSeparator(srv,"services.sep3");
 #ifdef HAS_WEB_SERVER
-  AddBool(srv,  "services.webserver",        263, false);
+  AddBool(srv,  "services.webserver",        263, true);
 #ifdef _LINUX
   AddString(srv,"services.webserverport",    730, (geteuid()==0)?"80":"8080", EDIT_CONTROL_NUMBER_INPUT, false, 730);
 #else
   AddString(srv,"services.webserverport",    730, "80", EDIT_CONTROL_NUMBER_INPUT, false, 730);
 #endif
-  AddString(srv,"services.webserverusername",1048, "xbmc", EDIT_CONTROL_INPUT);
-  AddString(srv,"services.webserverpassword",733, "", EDIT_CONTROL_HIDDEN_INPUT, true, 733);
+  AddString(srv,"services.webserverusername",1048, "marine", EDIT_CONTROL_INPUT);
+  AddString(srv,"services.webserverpassword",733, "meego", EDIT_CONTROL_HIDDEN_INPUT, true, 733);
   AddDefaultAddon(srv, "services.webskin",199, DEFAULT_WEB_INTERFACE, ADDON_WEB_INTERFACE);
 #endif
 #ifdef HAS_EVENT_SERVER
@@ -697,7 +776,7 @@ void CGUISettings::Initialize()
   AddString(NULL,"services.esport",            792, "9777", EDIT_CONTROL_NUMBER_INPUT, false, 792);
   AddInt(NULL,   "services.esportrange",       793, 10, 1, 1, 100, SPIN_CONTROL_INT);
   AddInt(NULL,   "services.esmaxclients",      797, 20, 1, 1, 100, SPIN_CONTROL_INT);
-  AddBool(srv,  "services.esallinterfaces",   794, false);
+  AddBool(srv,  "services.esallinterfaces",   794, true);
   AddInt(NULL,   "services.esinitialdelay",    795, 750, 5, 5, 10000, SPIN_CONTROL_INT);
   AddInt(NULL,   "services.escontinuousdelay", 796, 25, 5, 5, 10000, SPIN_CONTROL_INT);
 #endif
@@ -707,12 +786,17 @@ void CGUISettings::Initialize()
 #endif
 
 #ifndef _WIN32
+#ifndef IS_MEEGO_TV
   CSettingsCategory* smb = AddCategory(6, "smb", 1200);
   AddString(smb, "smb.winsserver",  1207,   "",  EDIT_CONTROL_IP_INPUT);
   AddString(smb, "smb.workgroup",   1202,   "WORKGROUP", EDIT_CONTROL_INPUT, false, 1202);
 #endif
-
+#endif
+#ifndef IS_MEEGO_TV
   CSettingsCategory* net = AddCategory(6, "network", 798);
+#else
+  CSettingsCategory* net = NULL;
+#endif
   if (g_application.IsStandAlone())
   {
 #ifndef __APPLE__
@@ -743,20 +827,24 @@ void CGUISettings::Initialize()
   AddGroup(7, 480);
   CSettingsCategory* laf = AddCategory(7,"lookandfeel", 166);
   AddDefaultAddon(laf, "lookandfeel.skin",166,DEFAULT_SKIN, ADDON_SKIN);
+#ifndef IS_MEEGO_TV
   AddString(laf, "lookandfeel.skintheme",15111,"SKINDEFAULT", SPIN_CONTROL_TEXT);
   AddString(laf, "lookandfeel.skincolors",14078, "SKINDEFAULT", SPIN_CONTROL_TEXT);
   AddString(laf, "lookandfeel.font",13303,"Default", SPIN_CONTROL_TEXT);
   AddInt(laf, "lookandfeel.skinzoom",20109, 0, -20, 2, 20, SPIN_CONTROL_INT, MASK_PERCENT);
   AddInt(laf, "lookandfeel.startupwindow",512,1, WINDOW_HOME, 1, WINDOW_PYTHON_END, SPIN_CONTROL_TEXT);
+#endif
   AddString(laf, "lookandfeel.soundskin",15108,"SKINDEFAULT", SPIN_CONTROL_TEXT);
+#ifndef IS_MEEGO_TV
   AddSeparator(laf, "lookandfeel.sep2");
-  AddBool(laf, "lookandfeel.enablerssfeeds",13305,  true);
+  AddBool(laf, "lookandfeel.enablerssfeeds",13305, false);
   AddString(laf, "lookandfeel.rssedit", 21450, "", BUTTON_CONTROL_STANDARD);
+#endif
 
   CSettingsCategory* loc = AddCategory(7, "locale", 14090);
   AddString(loc, "locale.language",248,"english", SPIN_CONTROL_TEXT);
-  AddString(loc, "locale.country", 20026, "USA", SPIN_CONTROL_TEXT);
-  AddString(loc, "locale.charset", 14091, "DEFAULT", SPIN_CONTROL_TEXT); // charset is set by the language file
+  AddString(loc, "locale.country", 20026, "UK (24hr)", SPIN_CONTROL_TEXT);
+  AddString(NULL, "locale.charset", 14091, "DEFAULT", SPIN_CONTROL_TEXT); // charset is set by the language file
   
   bool use_timezone = false;
   
@@ -779,7 +867,11 @@ void CGUISettings::Initialize()
   AddString(loc, "locale.timeserveraddress", 731, "pool.ntp.org", EDIT_CONTROL_INPUT);
 #endif
 
+#ifndef IS_MEEGO_TV
   CSettingsCategory* fl = AddCategory(7, "filelists", 14081);
+#else
+  CSettingsCategory* fl = NULL;
+#endif
   AddBool(fl, "filelists.showparentdiritems", 13306, true);
   AddBool(fl, "filelists.showextensions", 497, true);
   AddBool(fl, "filelists.ignorethewhensorting", 13399, true);
@@ -787,7 +879,11 @@ void CGUISettings::Initialize()
   AddBool(fl, "filelists.showaddsourcebuttons", 21382,  true);
   AddBool(fl, "filelists.showhidden", 21330, false);
 
+#ifndef IS_MEEGO_TV
   CSettingsCategory* ss = AddCategory(7, "screensaver", 360);
+#else
+  CSettingsCategory* ss = NULL;
+#endif
   AddInt(ss, "screensaver.time", 355, 3, 1, 1, 60, SPIN_CONTROL_INT_PLUS, MASK_MINS);
   AddDefaultAddon(ss, "screensaver.mode", 356, "screensaver.xbmc.builtin.dim", ADDON_SCREENSAVER);
   AddString(ss, "screensaver.settings", 21417, "", BUTTON_CONTROL_STANDARD);

@@ -1170,7 +1170,7 @@ void CGUIWindowSettingsCategory::OnSettingChanged(CBaseSettingControl *pSettingC
     musicdatabase.Clean();
     CUtil::DeleteMusicDatabaseDirectoryCache();
   }
-  else if (strSetting.Equals("videolibrary.cleanup"))
+  else if (strSetting.Equals("videolibrary.cleanup") || strSetting.Equals("musiclibrary.cleanup2"))
   {
     if (CGUIDialogYesNo::ShowAndGetInput(313, 333, 0, 0))
     {
