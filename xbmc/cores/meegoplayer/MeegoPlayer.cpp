@@ -37,6 +37,7 @@
 #include "StringUtils.h"
 #include "URL.h"
 #include "XMLUtils.h"
+#include "threads/SystemClock.h"
 #include "utils/TimeUtils.h"
 #include "utils/log.h"
 #include "dialogs/GUIDialogBusy.h"
@@ -56,7 +57,7 @@ using namespace XFILE;
 
 CMeegoPlayer::CMeegoPlayer(IPlayerCallback& callback)
     : IPlayer(callback),
-      CThread()
+      CThread("CMeegoPlayer")
 {
   m_bAbortRequest = false;
   m_bIsPlaying = false;
@@ -135,8 +136,6 @@ bool CMeegoPlayer::IsPlaying() const
 
 void CMeegoPlayer::Process()
 {
-  SetName("CMeegoPlayer");
-
   CStdString mainFile = m_launchFilename;
   CStdString archiveContent = "";
   // unwind names
@@ -154,7 +153,7 @@ void CMeegoPlayer::Process()
     g_audioContext.SetActiveDevice(CAudioContext::NONE);
   }
 
-  m_playbackStartTime = CTimeUtils::GetTimeMS();
+  m_playbackStartTime = XbmcThreads::SystemClockMillis();
   m_waitTime = m_playbackStartTime;
 
   if (protocol == "udp" || protocol == "rtsp") {
@@ -327,9 +326,9 @@ void CMeegoPlayer::SeekTime(__int64 iTime)
 __int64 CMeegoPlayer::GetTime() // in millis
 {
   if (!m_paused) {
-    m_time = (CTimeUtils::GetTimeMS() - m_waitTime) - m_pauseTime;
+    m_time = (XbmcThreads::SystemClockMillis()- m_waitTime) - m_pauseTime;
   } else {
-    m_pauseTime = (CTimeUtils::GetTimeMS() - m_waitTime) - m_time;
+    m_pauseTime = (XbmcThreads::SystemClockMillis() - m_waitTime) - m_time;
   }
   return m_time;
 }
