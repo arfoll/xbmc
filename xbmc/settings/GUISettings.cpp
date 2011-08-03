@@ -846,7 +846,7 @@ void CGUISettings::Initialize()
 
   CSettingsCategory* loc = AddCategory(7, "locale", 14090);
   AddString(loc, "locale.language",248,"english", SPIN_CONTROL_TEXT);
-  AddString(loc, "locale.country", 20026, "UK (24hr)", SPIN_CONTROL_TEXT);
+  AddString(loc, "locale.country", 20026, "UK (24h)", SPIN_CONTROL_TEXT);
   AddString(NULL, "locale.charset", 14091, "DEFAULT", SPIN_CONTROL_TEXT); // charset is set by the language file
   
   bool use_timezone = false;
