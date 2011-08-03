@@ -3682,9 +3682,9 @@ bool CApplication::PlayFile(const CFileItem& item, bool bRestart)
         g_windowManager.ActivateWindow(WINDOW_FULLSCREEN_VIDEO);
 
       // if player didn't manange to switch to fullscreen by itself do it here
-      if( options.fullscreen && g_renderManager.IsStarted()
-       && g_windowManager.GetActiveWindow() != WINDOW_FULLSCREEN_VIDEO )
-       SwitchToFullScreen();
+      if (g_windowManager.GetActiveWindow() != WINDOW_FULLSCREEN_VIDEO) {
+        SwitchToFullScreen();
+      }
 
       if (!item.IsDVDImage() && !item.IsDVDFile())
       {
@@ -3970,7 +3970,8 @@ bool CApplication::IsPlayingVideo() const
 
 bool CApplication::IsPlayingFullScreenVideo() const
 {
-  return IsPlayingVideo() && g_graphicsContext.IsFullScreenVideo();
+  int iWin = g_windowManager.GetActiveWindow();
+  return IsPlayingVideo() && (g_graphicsContext.IsFullScreenVideo() || iWin == WINDOW_VISUALISATION);
 }
 
 void CApplication::SaveFileState()
