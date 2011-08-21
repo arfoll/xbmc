@@ -329,6 +329,8 @@ namespace INFO
 #define STRING_COMPARE              411
 #define STRING_STR                  412
 #define INTEGER_GREATER_THAN        413
+#define STRING_STR_LEFT             414
+#define STRING_STR_RIGHT            415
 
 #define SKIN_BOOL                   600
 #define SKIN_STRING                 601
@@ -387,6 +389,9 @@ namespace INFO
 #define SYSTEM_CAN_SUSPEND          751
 #define SYSTEM_CAN_HIBERNATE        752
 #define SYSTEM_CAN_REBOOT           753
+
+#define SLIDESHOW_ISPAUSED          800
+#define SLIDESHOW_ISRANDOM          801
 
 #define SLIDE_INFO_START            900
 #define SLIDE_INFO_END              980
@@ -567,7 +572,7 @@ public:
   bool EvaluateBool(const CStdString &expression, int context = 0);
 
   int TranslateString(const CStdString &strCondition);
-  int GetInt(int info, int contextWindow = 0) const;
+  int GetInt(int info, int contextWindow = 0, const CGUIListItem *item = NULL) const;
   CStdString GetLabel(int info, int contextWindow = 0);
 
   CStdString GetImage(int info, int contextWindow);
@@ -630,6 +635,7 @@ public:
 
   void ResetCache();
 
+  int GetItemInt(const CGUIListItem *item, int info) const;
   CStdString GetItemLabel(const CFileItem *item, int info) const;
   CStdString GetItemImage(const CFileItem *item, int info) const;
 
@@ -678,6 +684,7 @@ protected:
   };
 
   bool GetMultiInfoBool(const GUIInfo &info, int contextWindow = 0, const CGUIListItem *item = NULL);
+  int GetMultiInfoInt(const GUIInfo &info, int contextWindow = 0) const;
   CStdString GetMultiInfoLabel(const GUIInfo &info, int contextWindow = 0) const;
   int TranslateListItem(const Property &info);
   int TranslateMusicPlayerString(const CStdString &info) const;

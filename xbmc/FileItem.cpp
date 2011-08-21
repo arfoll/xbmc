@@ -1427,6 +1427,7 @@ CFileItemPtr CFileItemList::Get(const CStdString& strPath)
   CSingleLock lock(m_lock);
 
   CStdString pathToCheck(strPath); pathToCheck.ToLower();
+
   if (m_fastLookup)
   {
     IMAPFILEITEMS it=m_map.find(pathToCheck);
@@ -1449,8 +1450,9 @@ CFileItemPtr CFileItemList::Get(const CStdString& strPath)
 const CFileItemPtr CFileItemList::Get(const CStdString& strPath) const
 {
   CSingleLock lock(m_lock);
-
+  
   CStdString pathToCheck(strPath); pathToCheck.ToLower();
+   
   if (m_fastLookup)
   {
     map<CStdString, CFileItemPtr>::const_iterator it=m_map.find(pathToCheck);
@@ -1973,7 +1975,7 @@ void CFileItemList::RemoveExtensions()
     m_items[i]->RemoveExtension();
 }
 
-void CFileItemList::Stack()
+void CFileItemList::Stack(bool stackFiles /* = true */)
 {
   CSingleLock lock(m_lock);
 
@@ -1985,6 +1987,30 @@ void CFileItemList::Stack()
 
   // items needs to be sorted for stuff below to work properly
   Sort(SORT_METHOD_LABEL, SORT_ORDER_ASC);
+
+  StackFolders();
+
+  if (stackFiles)
+    StackFiles();
+}
+
+void CFileItemList::StackFolders()
+{
+  // Precompile our REs
+  VECCREGEXP folderRegExps;
+  CRegExp folderRegExp(true);
+  const CStdStringArray& strFolderRegExps = g_advancedSettings.m_folderStackRegExps;
+
+  CStdStringArray::const_iterator strExpression = strFolderRegExps.begin();
+  while (strExpression != strFolderRegExps.end())
+  {
+    if (!folderRegExp.RegComp(*strExpression))
+      CLog::Log(LOGERROR, "%s: Invalid folder stack RegExp:'%s'", __FUNCTION__, strExpression->c_str());
+    else
+      folderRegExps.push_back(folderRegExp);
+
+    strExpression++;
+  }
 
   // stack folders
   int i = 0;
@@ -2005,34 +2031,42 @@ void CFileItemList::Stack()
         )
       {
         // stack cd# folders if contains only a single video file
-        // NOTE: if we're doing this anyway, why not collapse *all* folders with just a single video file?
-        CStdString folderName = item->GetLabel();
-        if (folderName.Left(2).Equals("CD") && StringUtils::IsNaturalNumber(folderName.Mid(2)))
+
+        bool bMatch(false);
+
+        VECCREGEXP::iterator expr = folderRegExps.begin();
+        while (!bMatch && expr != folderRegExps.end())
         {
-          CFileItemList items;
-          CDirectory::GetDirectory(item->GetPath(),items,g_settings.m_videoExtensions,true);
-          // optimized to only traverse listing once by checking for filecount
-          // and recording last file item for later use
-          int nFiles = 0;
-          int index = -1;
-          for (int j = 0; j < items.Size(); j++)
+          //CLog::Log(LOGDEBUG,"%s: Running expression %s on %s", __FUNCTION__, expr->GetPattern().c_str(), item->GetLabel().c_str());
+          bMatch = (expr->RegFind(item->GetLabel().c_str()) != -1);
+          if (bMatch)
           {
-            if (!items[j]->m_bIsFolder)
+            CFileItemList items;
+            CDirectory::GetDirectory(item->GetPath(),items,g_settings.m_videoExtensions,true);
+            // optimized to only traverse listing once by checking for filecount
+            // and recording last file item for later use
+            int nFiles = 0;
+            int index = -1;
+            for (int j = 0; j < items.Size(); j++)
             {
-              nFiles++;
-              index = j;
+              if (!items[j]->m_bIsFolder)
+              {
+                nFiles++;
+                index = j;
+              }
+
+              if (nFiles > 1)
+                break;
             }
-            if (nFiles > 1)
-              break;
+
+            if (nFiles == 1)
+              *item = *items[index];
           }
-          if (nFiles == 1)
-          {
-            *item = *items[index];
-          }
+          expr++;
         }
 
         // check for dvd folders
-        else
+        if (!bMatch)
         {
           CStdString path;
           CStdString dvdPath;
@@ -2090,7 +2124,10 @@ void CFileItemList::Stack()
       }
     }
   }
+}
 
+void CFileItemList::StackFiles()
+{
   // Precompile our REs
   VECCREGEXP stackRegExps;
   CRegExp tmpRegExp(true);
@@ -2109,7 +2146,7 @@ void CFileItemList::Stack()
   }
 
   // now stack the files, some of which may be from the previous stack iteration
-  i = 0;
+  int i = 0;
   while (i < Size())
   {
     CFileItemPtr item1 = Get(i);

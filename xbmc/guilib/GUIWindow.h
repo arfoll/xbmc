@@ -113,6 +113,8 @@ public:
   // on to the currently focused control.  Returns true if the action has been handled
   // and does not need to be passed further down the line (to our global action handlers)
   virtual bool OnAction(const CAction &action);
+  
+  virtual bool OnBack(int actionID);
 
   /*! \brief Clear the background (if necessary) prior to rendering the window
    */
@@ -254,8 +256,6 @@ protected:
   void ChangeButtonToEdit(int id, bool singleLabel = false);
 //#endif
 
-  void RunActions(std::vector<CGUIActionDescriptor>& actions);
-
   int m_idRange;
   OVERLAY_STATE m_overlayState;
   RESOLUTION_INFO m_coordsRes; // resolution that the window coordinates are in.
@@ -292,8 +292,8 @@ protected:
     }
   };
 
-  std::vector<CGUIActionDescriptor> m_loadActions;
-  std::vector<CGUIActionDescriptor> m_unloadActions;
+  CGUIAction m_loadActions;
+  CGUIAction m_unloadActions;
 
   bool m_manualRunActions;
 

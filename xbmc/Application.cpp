@@ -52,7 +52,7 @@
 #include "network/libscrobbler/lastfmscrobbler.h"
 #include "network/libscrobbler/librefmscrobbler.h"
 #include "GUIPassword.h"
-#include "InertialScrollingHandler.h"
+#include "input/InertialScrollingHandler.h"
 #include "ApplicationMessenger.h"
 #include "SectionLoader.h"
 #include "cores/DllLoader/DllLoaderContainer.h"
@@ -1226,16 +1226,17 @@ bool CApplication::StartWebServer()
     bool started = false;
     if (m_WebServer.Start(webPort, g_guiSettings.GetString("services.webserverusername"), g_guiSettings.GetString("services.webserverpassword")))
     {
+      std::map<std::string, std::string> txt; 
       started = true;
       // publish web frontend and API services
 #ifdef HAS_WEB_INTERFACE
-      CZeroconf::GetInstance()->PublishService("servers.webserver", "_http._tcp", "XBMC Web Server", webPort);
+      CZeroconf::GetInstance()->PublishService("servers.webserver", "_http._tcp", "XBMC Web Server", webPort, txt);
 #endif
 #ifdef HAS_HTTPAPI
-      CZeroconf::GetInstance()->PublishService("servers.webapi", "_xbmc-web._tcp", "XBMC HTTP API", webPort);
+      CZeroconf::GetInstance()->PublishService("servers.webapi", "_xbmc-web._tcp", "XBMC HTTP API", webPort, txt);
 #endif
 #ifdef HAS_JSONRPC
-      CZeroconf::GetInstance()->PublishService("servers.webjsonrpc", "_xbmc-jsonrpc._tcp", "XBMC JSONRPC", webPort);
+      CZeroconf::GetInstance()->PublishService("servers.webjsonrpc", "_xbmc-jsonrpc._tcp", "XBMC JSONRPC", webPort, txt);
 #endif
     }
 #ifdef HAS_HTTPAPI
@@ -1278,7 +1279,8 @@ bool CApplication::StartJSONRPCServer()
 
     if (CTCPServer::StartServer(g_advancedSettings.m_jsonTcpPort, g_guiSettings.GetBool("services.esallinterfaces")))
     {
-      CZeroconf::GetInstance()->PublishService("servers.jsonrpc", "_xbmc-jsonrpc._tcp", "XBMC JSONRPC", g_advancedSettings.m_jsonTcpPort);
+      std::map<std::string, std::string> txt;  
+      CZeroconf::GetInstance()->PublishService("servers.jsonrpc", "_xbmc-jsonrpc._tcp", "XBMC JSONRPC", g_advancedSettings.m_jsonTcpPort, txt);
       return true;
     }
     else
@@ -1671,6 +1673,13 @@ void CApplication::LoadSkin(const SkinPtr& skin)
 
   if (g_SkinInfo->HasSkinFile("DialogFullScreenInfo.xml"))
     g_windowManager.Add(new CGUIDialogFullScreenInfo);
+
+  { // we can't register visible condition in dialog's ctor because infomanager is cleared when unloading skin
+    CGUIDialog *overlay = (CGUIDialog *)g_windowManager.GetWindow(WINDOW_DIALOG_VIDEO_OVERLAY);
+    if (overlay) overlay->SetVisibleCondition("skin.hasvideooverlay");
+    overlay = (CGUIDialog *)g_windowManager.GetWindow(WINDOW_DIALOG_MUSIC_OVERLAY);
+    if (overlay) overlay->SetVisibleCondition("skin.hasmusicoverlay");
+  }
 
   CLog::Log(LOGINFO, "  skin loaded...");
 
@@ -3301,9 +3310,9 @@ bool CApplication::PlayMedia(const CFileItem& item, int iPlaylist)
   }
   if (item.IsSmartPlayList())
   {
-    CDirectory dir;
     CFileItemList items;
-    if (dir.GetDirectory(item.GetPath(), items) && items.Size())
+    CUtil::GetRecursiveListing(item.GetPath(), items, "");
+    if (items.Size())
     {
       CSmartPlaylist smartpl;
       //get name and type of smartplaylist, this will always succeed as GetDirectory also did this.
@@ -3467,7 +3476,7 @@ bool CApplication::PlayFile(const CFileItem& item, bool bRestart)
 #ifdef HAS_DVD_DRIVE
     // Display the Play Eject dialog
     if (CGUIDialogPlayEject::ShowAndGetInput(item))
-      return MEDIA_DETECT::CAutorun::PlayDisc();
+      return MEDIA_DETECT::CAutorun::PlayDisc(!MEDIA_DETECT::CAutorun::CanResumePlayDVD() || CGUIDialogYesNo::ShowAndGetInput(341, -1, -1, -1, 13404, 12021));
 #endif
     return true;
   }
@@ -4478,6 +4487,9 @@ bool CApplication::OnMessage(CGUIMessage& message)
 
         delete m_pPlayer;
         m_pPlayer = 0;
+
+        // Reset playspeed
+        m_iPlaySpeed = 1;
       }
 
       if (!IsPlaying())
@@ -4527,13 +4539,6 @@ bool CApplication::OnMessage(CGUIMessage& message)
   case GUI_MSG_EXECUTE:
     if (message.GetNumStringParams())
       return ExecuteXBMCAction(message.GetStringParam());
-    else
-    {
-      CGUIActionDescriptor action = message.GetAction();
-      action.m_sourceWindowId = message.GetControlId(); // set source window id,
-      return ExecuteAction(action);
-    }
-
     break;
   }
   return false;
@@ -4576,26 +4581,6 @@ bool CApplication::ExecuteXBMCAction(std::string actionStr)
       }
       return true;
     }
-
-bool CApplication::ExecuteAction(CGUIActionDescriptor action)
-{
-  if (action.m_lang == CGUIActionDescriptor::LANG_XBMC)
-  {
-    return ExecuteXBMCAction(action.m_action);
-  }
-  else if (action.m_lang == CGUIActionDescriptor::LANG_PYTHON)
-  {
-#ifdef HAS_PYTHON
-    // Determine the context of the action, if possible
-    vector<CStdString> argv;
-    g_pythonParser.evalString(action.m_action, argv);
-    return true;
-#else
-    return false;
-#endif
-  }
-  return false;
-}
 
 void CApplication::Process()
 {

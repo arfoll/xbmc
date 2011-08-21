@@ -20,6 +20,7 @@
  */
 
 #include "SourcesDirectory.h"
+#include "utils/URIUtils.h"
 #include "URL.h"
 #include "Util.h"
 #include "FileItem.h"
@@ -43,9 +44,13 @@ bool CSourcesDirectory::GetDirectory(const CStdString& strPath, CFileItemList &i
   // break up our path
   // format is:  sources://<type>/
   CURL url(strPath);
-  CStdString type(url.GetHostName());
+  CStdString type(url.GetFileName());
+  URIUtils::RemoveSlashAtEnd(type);
 
-  VECSOURCES sources = *g_settings.GetSourcesFromType(url.GetHostName());
+  VECSOURCES sources;
+  VECSOURCES *sourcesFromType = g_settings.GetSourcesFromType(type);
+  if (sourcesFromType)
+    sources = *sourcesFromType;
   g_mediaManager.GetRemovableDrives(sources);
 
   if (sources.empty())

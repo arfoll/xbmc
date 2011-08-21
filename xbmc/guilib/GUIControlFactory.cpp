@@ -61,6 +61,7 @@
 #include "GUIColorManager.h"
 #include "settings/Settings.h"
 #include "utils/StringUtils.h"
+#include "GUIAction.h"
 
 using namespace std;
 
@@ -186,45 +187,6 @@ bool CGUIControlFactory::GetDimension(const TiXmlNode *pRootNode, const char* st
   }
   value = (float)atof(pNode->FirstChild()->Value());
   return true;
-}
-
-bool CGUIControlFactory::GetMultipleString(const TiXmlNode* pRootNode, const char* strTag, std::vector<CGUIActionDescriptor>& vecStringValue)
-{
-  const TiXmlNode* pNode = pRootNode->FirstChild(strTag );
-  if (!pNode) return false;
-  vecStringValue.clear();
-  bool bFound = false;
-  while (pNode)
-  {
-    CGUIActionDescriptor action;
-    if (CGUIControlFactory::GetAction((const TiXmlElement*) pNode, action))
-    {
-      vecStringValue.push_back(action);
-      bFound = true;
-    }
-    pNode = pNode->NextSibling(strTag);
-  }
-  return bFound;
-}
-
-bool CGUIControlFactory::GetAction(const TiXmlElement* pElement, CGUIActionDescriptor &action)
-{
-  CStdString langStr = pElement->Attribute("lang");
-  if (langStr.CompareNoCase("python") == 0 )
-    action.m_lang = CGUIActionDescriptor::LANG_PYTHON;
-  else
-    action.m_lang = CGUIActionDescriptor::LANG_XBMC;
-
-  if (pElement->FirstChild())
-  {
-    action.m_action = pElement->FirstChild()->Value();
-    return true;
-  }
-  else
-  {
-    action.m_action = "";
-    return false;
-  }
 }
 
 bool CGUIControlFactory::GetAspectRatio(const TiXmlNode* pRootNode, const char* strTag, CAspectRatio &aspect)
@@ -424,6 +386,24 @@ bool CGUIControlFactory::GetAnimations(TiXmlNode *control, const CRect &rect, in
   return ret;
 }
 
+bool CGUIControlFactory::GetActions(const TiXmlNode* pRootNode, const char* strTag, CGUIAction& action)
+{
+  action.m_actions.clear();
+  const TiXmlElement* pElement = pRootNode->FirstChildElement(strTag);
+  while (pElement)
+  {
+    if (pElement->FirstChild())
+    {
+      CGUIAction::cond_action_pair pair;
+      pair.condition = pElement->Attribute("condition");
+      pair.action = pElement->FirstChild()->Value();
+      action.m_actions.push_back(pair);
+    }
+    pElement = pElement->NextSiblingElement(strTag);
+  }
+  return action.m_actions.size() > 0;
+}
+
 bool CGUIControlFactory::GetHitRect(const TiXmlNode *control, CRect &rect)
 {
   const TiXmlElement* node = control->FirstChildElement("hitrect");
@@ -436,6 +416,21 @@ bool CGUIControlFactory::GetHitRect(const TiXmlNode *control, CRect &rect)
     if (node->Attribute("h"))
       rect.y2 = (float)atof(node->Attribute("h")) + rect.y1;
     return true;
+  }
+  return false;
+}
+
+bool CGUIControlFactory::GetScroller(const TiXmlNode *control, const CStdString &scrollerTag, CScroller& scroller)
+{
+  const TiXmlElement* node = control->FirstChildElement(scrollerTag);
+  if (node)
+  {
+    unsigned int scrollTime;
+    if (XMLUtils::GetUInt(control, scrollerTag, scrollTime))
+    {
+      scroller = CScroller(scrollTime, CAnimEffect::GetTweener(node));
+      return true;
+    }
   }
   return false;
 }
@@ -460,20 +455,6 @@ bool CGUIControlFactory::GetInfoColor(const TiXmlNode *control, const char *strT
     return true;
   }
   return false;
-}
-
-bool CGUIControlFactory::GetNavigation(const TiXmlElement *node, const char *tag, int &direction, vector<CGUIActionDescriptor> &actions)
-{
-  if (!GetMultipleString(node, tag, actions))
-    return false; // no tag specified
-  if (actions.size() == 1 && StringUtils::IsNaturalNumber(actions[0].m_action))
-  { // single numeric tag specified
-    direction = atol(actions[0].m_action.c_str());
-    actions.clear();
-  }
-  else
-    direction = 0;
-  return true;
 }
 
 void CGUIControlFactory::GetInfoLabel(const TiXmlNode *pControlNode, const CStdString &labelTag, CGUIInfoLabel &infoLabel)
@@ -595,8 +576,7 @@ CGUIControl* CGUIControlFactory::Create(int parentID, const CRect &rect, TiXmlEl
   float width = 0, height = 0;
   float minWidth = 0;
 
-  int left = 0, right = 0, up = 0, down = 0, next = 0, prev = 0;
-  vector<CGUIActionDescriptor> leftActions, rightActions, upActions, downActions, nextActions, prevActions;
+  CGUIAction leftActions, rightActions, upActions, downActions, backActions, nextActions, prevActions;
 
   int pageControl = 0;
   CGUIInfoColor colorDiffuse(0xFFFFFFFF);
@@ -641,11 +621,11 @@ CGUIControl* CGUIControlFactory::Create(int parentID, const CRect &rect, TiXmlEl
   CPoint offset;
 
   bool bHasPath = false;
-  vector<CGUIActionDescriptor> clickActions;
-  vector<CGUIActionDescriptor> altclickActions;
-  vector<CGUIActionDescriptor> focusActions;
-  vector<CGUIActionDescriptor> unfocusActions;
-  vector<CGUIActionDescriptor> textChangeActions;
+  CGUIAction clickActions;
+  CGUIAction altclickActions;
+  CGUIAction focusActions;
+  CGUIAction unfocusActions;
+  CGUIAction textChangeActions;
   CStdString strTitle = "";
   CStdString strRSSTags = "";
 
@@ -741,12 +721,13 @@ CGUIControl* CGUIControlFactory::Create(int parentID, const CRect &rect, TiXmlEl
   hitRect.SetRect(posX, posY, posX + width, posY + height);
   GetHitRect(pControlNode, hitRect);
 
-  if (!GetNavigation(pControlNode, "onup", up, upActions)) up = id;
-  if (!GetNavigation(pControlNode, "ondown", down, downActions)) down = id;
-  if (!GetNavigation(pControlNode, "onleft", left, leftActions)) left = id;
-  if (!GetNavigation(pControlNode, "onright", right, rightActions)) right = id;
-  if (!GetNavigation(pControlNode, "onnext", next, nextActions)) next = id;
-  if (!GetNavigation(pControlNode, "onprev", prev, prevActions)) prev = id;
+  if (!GetActions(pControlNode, "onup",    upActions))    upActions.SetNavigation(id);
+  if (!GetActions(pControlNode, "ondown",  downActions))  downActions.SetNavigation(id);
+  if (!GetActions(pControlNode, "onleft",  leftActions))  leftActions.SetNavigation(id);
+  if (!GetActions(pControlNode, "onright", rightActions)) rightActions.SetNavigation(id);
+  if (!GetActions(pControlNode, "onnext",  nextActions))  nextActions.SetNavigation(id);
+  if (!GetActions(pControlNode, "onprev",  prevActions))  prevActions.SetNavigation(id);
+  GetActions(pControlNode, "onback",  backActions);
 
   if (XMLUtils::GetInt(pControlNode, "defaultcontrol", defaultControl))
   {
@@ -783,11 +764,12 @@ CGUIControl* CGUIControlFactory::Create(int parentID, const CRect &rect, TiXmlEl
   if (XMLUtils::GetFloat(pControlNode, "textwidth", labelInfo.width))
     labelInfo.align |= XBFONT_TRUNCATED;
 
-  GetMultipleString(pControlNode, "onclick", clickActions);
-  GetMultipleString(pControlNode, "ontextchange", textChangeActions);
-  GetMultipleString(pControlNode, "onfocus", focusActions);
-  GetMultipleString(pControlNode, "onunfocus", unfocusActions);
-  GetMultipleString(pControlNode, "altclick", altclickActions);
+  GetActions(pControlNode, "onclick", clickActions);
+  GetActions(pControlNode, "ontextchange", textChangeActions);
+  GetActions(pControlNode, "onfocus", focusActions);
+  GetActions(pControlNode, "onunfocus", unfocusActions);
+  focusActions.m_sendThreadMessages = unfocusActions.m_sendThreadMessages = true;
+  GetActions(pControlNode, "altclick", altclickActions);
 
   CStdString infoString;
   if (XMLUtils::GetString(pControlNode, "info", infoString))
@@ -1015,8 +997,11 @@ CGUIControl* CGUIControlFactory::Create(int parentID, const CRect &rect, TiXmlEl
   }
   else if (type == CGUIControl::GUICONTROL_GROUPLIST)
   {
+    CScroller scroller;
+    GetScroller(pControlNode, "scrolltime", scroller);
+
     control = new CGUIControlGroupList(
-      parentID, id, posX, posY, width, height, buttonGap, pageControl, orientation, useControlCoords, labelInfo.align, scrollTime);
+      parentID, id, posX, posY, width, height, buttonGap, pageControl, orientation, useControlCoords, labelInfo.align, scroller);
     ((CGUIControlGroup *)control)->SetRenderFocusedLast(renderFocusedLast);
   }
   else if (type == CGUIControl::GUICONTROL_LABEL)
@@ -1226,7 +1211,10 @@ CGUIControl* CGUIControlFactory::Create(int parentID, const CRect &rect, TiXmlEl
   }
   else if (type == CGUIControl::GUICONTAINER_LIST)
   {
-    control = new CGUIListContainer(parentID, id, posX, posY, width, height, orientation, scrollTime, preloadItems);
+    CScroller scroller;
+    GetScroller(pControlNode, "scrolltime", scroller);
+
+    control = new CGUIListContainer(parentID, id, posX, posY, width, height, orientation, scroller, preloadItems);
     ((CGUIListContainer *)control)->LoadLayout(pControlNode);
     ((CGUIListContainer *)control)->LoadContent(pControlNode);
     ((CGUIListContainer *)control)->SetType(viewType, viewLabel);
@@ -1235,7 +1223,10 @@ CGUIControl* CGUIControlFactory::Create(int parentID, const CRect &rect, TiXmlEl
   }
   else if (type == CGUIControl::GUICONTAINER_WRAPLIST)
   {
-    control = new CGUIWrappingListContainer(parentID, id, posX, posY, width, height, orientation, scrollTime, preloadItems, focusPosition);
+    CScroller scroller;
+    GetScroller(pControlNode, "scrolltime", scroller);
+
+    control = new CGUIWrappingListContainer(parentID, id, posX, posY, width, height, orientation, scroller, preloadItems, focusPosition);
     ((CGUIWrappingListContainer *)control)->LoadLayout(pControlNode);
     ((CGUIWrappingListContainer *)control)->LoadContent(pControlNode);
     ((CGUIWrappingListContainer *)control)->SetType(viewType, viewLabel);
@@ -1244,7 +1235,10 @@ CGUIControl* CGUIControlFactory::Create(int parentID, const CRect &rect, TiXmlEl
   }
   else if (type == CGUIControl::GUICONTAINER_FIXEDLIST)
   {
-    control = new CGUIFixedListContainer(parentID, id, posX, posY, width, height, orientation, scrollTime, preloadItems, focusPosition, iMovementRange);
+    CScroller scroller;
+    GetScroller(pControlNode, "scrolltime", scroller);
+
+    control = new CGUIFixedListContainer(parentID, id, posX, posY, width, height, orientation, scroller, preloadItems, focusPosition, iMovementRange);
     ((CGUIFixedListContainer *)control)->LoadLayout(pControlNode);
     ((CGUIFixedListContainer *)control)->LoadContent(pControlNode);
     ((CGUIFixedListContainer *)control)->SetType(viewType, viewLabel);
@@ -1253,7 +1247,10 @@ CGUIControl* CGUIControlFactory::Create(int parentID, const CRect &rect, TiXmlEl
   }
   else if (type == CGUIControl::GUICONTAINER_PANEL)
   {
-    control = new CGUIPanelContainer(parentID, id, posX, posY, width, height, orientation, scrollTime, preloadItems);
+    CScroller scroller;
+    GetScroller(pControlNode, "scrolltime", scroller); 
+
+    control = new CGUIPanelContainer(parentID, id, posX, posY, width, height, orientation, scroller, preloadItems);
     ((CGUIPanelContainer *)control)->LoadLayout(pControlNode);
     ((CGUIPanelContainer *)control)->LoadContent(pControlNode);
     ((CGUIPanelContainer *)control)->SetType(viewType, viewLabel);
@@ -1317,9 +1314,7 @@ CGUIControl* CGUIControlFactory::Create(int parentID, const CRect &rect, TiXmlEl
     control->SetEnableCondition(enableCondition);
     control->SetAnimations(animations);
     control->SetColorDiffuse(colorDiffuse);
-    control->SetNavigation(up, down, left, right);
-    control->SetTabNavigation(next,prev);
-    control->SetNavigationActions(upActions, downActions, leftActions, rightActions);
+    control->SetNavigationActions(upActions, downActions, leftActions, rightActions, backActions);
     control->SetPulseOnSelect(bPulse);
     if (hasCamera)
       control->SetCamera(camera);

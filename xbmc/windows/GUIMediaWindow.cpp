@@ -153,8 +153,7 @@ CFileItemPtr CGUIMediaWindow::GetCurrentListItem(int offset)
 
 bool CGUIMediaWindow::OnAction(const CAction &action)
 {
-  if (action.GetID() == ACTION_PARENT_DIR ||
-     (action.GetID() == ACTION_NAV_BACK && !(m_vecItems->IsVirtualDirectoryRoot() || m_vecItems->GetPath() == m_startDirectory)))
+  if (action.GetID() == ACTION_PARENT_DIR)
   {
     GoParentFolder();
     return true;
@@ -197,6 +196,16 @@ bool CGUIMediaWindow::OnAction(const CAction &action)
   }
 
   return false;
+}
+
+bool CGUIMediaWindow::OnBack(int actionID)
+{
+  if (actionID == ACTION_NAV_BACK && !(m_vecItems->IsVirtualDirectoryRoot() || m_vecItems->GetPath() == m_startDirectory))
+  {
+    GoParentFolder();
+    return true;
+  }
+  return CGUIWindow::OnBack(actionID);
 }
 
 bool CGUIMediaWindow::OnMessage(CGUIMessage& message)
@@ -655,7 +664,8 @@ bool CGUIMediaWindow::GetDirectory(const CStdString &strDirectory, CFileItemList
   int iWindow = GetID();
   CStdStringArray regexps;
 
-  if (iWindow == WINDOW_VIDEO_FILES)
+  // TODO: Do we want to limit the directories we apply the video ones to?
+  if (iWindow == WINDOW_VIDEO_NAV)
     regexps = g_advancedSettings.m_videoExcludeFromListingRegExps;
   if (iWindow == WINDOW_MUSIC_FILES)
     regexps = g_advancedSettings.m_audioExcludeFromListingRegExps;

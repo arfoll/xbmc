@@ -164,8 +164,7 @@ bool CGUIWindowFileManager::OnAction(const CAction &action)
       }
       return true;
     }
-    if (action.GetID() == ACTION_PARENT_DIR ||
-       (action.GetID() == ACTION_NAV_BACK && !m_vecItems[list]->IsVirtualDirectoryRoot()))
+    if (action.GetID() == ACTION_PARENT_DIR)
     {
       GoParentFolder(list);
       return true;
@@ -174,11 +173,22 @@ bool CGUIWindowFileManager::OnAction(const CAction &action)
     {
 #ifdef HAS_DVD_DRIVE
       if (m_vecItems[list]->Get(GetSelectedItem(list))->IsDVD())
-        return MEDIA_DETECT::CAutorun::PlayDisc();
+        return MEDIA_DETECT::CAutorun::PlayDisc(!MEDIA_DETECT::CAutorun::CanResumePlayDVD() || CGUIDialogYesNo::ShowAndGetInput(341, -1, -1, -1, 13404, 12021));
 #endif
     }
   }
   return CGUIWindow::OnAction(action);
+}
+
+bool CGUIWindowFileManager::OnBack(int actionID)
+{
+  int list = GetFocusedList();
+  if (list >= 0 && list <= 1 && actionID == ACTION_NAV_BACK && !m_vecItems[list]->IsVirtualDirectoryRoot())
+  {
+    GoParentFolder(list);
+    return true;
+  }
+  return CGUIWindow::OnBack(actionID);
 }
 
 bool CGUIWindowFileManager::OnMessage(CGUIMessage& message)

@@ -32,6 +32,7 @@
 #include "playlists/PlayListM3U.h"
 #include "guilib/GUIWindowManager.h"
 #include "dialogs/GUIDialogKeyboard.h"
+#include "dialogs/GUIDialogYesNo.h"
 #include "FileItem.h"
 #include "settings/GUISettings.h"
 #include "GUIUserMessages.h"
@@ -59,13 +60,11 @@ CGUIWindowMusicPlaylistEditor::~CGUIWindowMusicPlaylistEditor(void)
   delete m_playlist;
 }
 
-bool CGUIWindowMusicPlaylistEditor::OnAction(const CAction &action)
+bool CGUIWindowMusicPlaylistEditor::OnBack(int actionID)
 {
-  if (action.GetID() == ACTION_NAV_BACK && !m_viewControl.HasControl(GetFocusedControlID()))
-  { // base class would normally go up a folder here, but we don't do this
-    return CGUIWindow::OnAction(action);
-  }
-  return CGUIWindowMusicBase::OnAction(action);
+  if (actionID == ACTION_NAV_BACK && !m_viewControl.HasControl(GetFocusedControlID()))
+    return CGUIWindow::OnBack(actionID); // base class goes up a folder, but none to go up
+  return CGUIWindowMusicBase::OnBack(actionID);
 }
 
 bool CGUIWindowMusicPlaylistEditor::OnMessage(CGUIMessage& message)
@@ -201,7 +200,7 @@ void CGUIWindowMusicPlaylistEditor::PlayItem(int iItem)
 
 #ifdef HAS_DVD_DRIVE
   if (m_vecItems->Get(iItem)->IsDVD())
-    MEDIA_DETECT::CAutorun::PlayDisc();
+    MEDIA_DETECT::CAutorun::PlayDisc(!MEDIA_DETECT::CAutorun::CanResumePlayDVD() || CGUIDialogYesNo::ShowAndGetInput(341, -1, -1, -1, 13404, 12021));
   else
 #endif
     CGUIWindowMusicBase::PlayItem(iItem);
