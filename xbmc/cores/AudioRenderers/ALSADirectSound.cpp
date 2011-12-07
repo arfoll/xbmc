@@ -30,6 +30,11 @@
 #define CHECK_ALSA(l,s,e) if ((e)<0) CLog::Log(l,"%s - %s, alsa error: %d - %s",__FUNCTION__,s,e,snd_strerror(e));
 #define CHECK_ALSA_RETURN(l,s,e) CHECK_ALSA((l),(s),(e)); if ((e)<0) return false;
 
+#define AMPSERVER_BUS_NAME "uk.co.madeo.ampserver"
+#define AMPSERVER_BUS_PATH "/uk/co/madeo/ampserver"
+#define DBUS_REPLY_TIMEOUT -1
+#define AUDIO_GAP 120
+
 using namespace std;
 
 static CStdString QuoteDevice(const CStdString& device)
@@ -51,6 +56,11 @@ CALSADirectSound::CALSADirectSound()
 
 bool CALSADirectSound::Initialize(IAudioCallback* pCallback, const CStdString& device, int iChannels, enum PCMChannels *channelMap, unsigned int uiSamplesPerSec, unsigned int uiBitsPerSample, bool bResample, bool bIsMusic, bool bPassthrough)
 {
+  // Dbus crap
+  dbus_error_init (&error);
+  connection = dbus_bus_get (DBUS_BUS_SYSTEM, &error);
+  // end of Dbus crap
+
   enum PCMChannels *outLayout;
 
   static enum PCMChannels ALSAChannelMap[8] =
@@ -424,28 +434,90 @@ bool CALSADirectSound::Stop()
 //***********************************************************************************************
 long CALSADirectSound::GetCurrentVolume() const
 {
-  return m_nCurrentVolume;
+  DBusMessage *message, *reply;
+  DBusError replyError;
+  dbus_int32_t vol = (int) m_nCurrentVolume;
+  message = dbus_message_new_method_call (AMPSERVER_BUS_NAME, 
+                                          AMPSERVER_BUS_PATH, 
+                                          AMPSERVER_BUS_NAME, 
+                                          "getvolume");
+
+  dbus_error_init (&replyError);
+  reply = dbus_connection_send_with_reply_and_block (connection, message, DBUS_REPLY_TIMEOUT, &replyError);
+  if (reply != NULL) {
+      DBusMessageIter args;
+      int type;
+
+      if (dbus_message_iter_init(message, &args)) {
+          /* message is not empty */
+          while (dbus_message_iter_has_next(&args)) {
+              type = dbus_message_iter_get_arg_type (&args);
+              if (type == DBUS_TYPE_INT32) {
+                  dbus_message_iter_get_basic(&args, &vol);
+              }
+           }
+      }
+  }
+
+  return (long) vol;
 }
 
 //***********************************************************************************************
 void CALSADirectSound::Mute(bool bMute)
 {
+  DBusMessage *message;
+
   if (!m_bIsAllocated)
     return;
 
-  if (bMute)
-    SetCurrentVolume(VOLUME_MINIMUM);
-  else
-    SetCurrentVolume(m_nCurrentVolume);
-
+  if (bMute) {
+    //SetCurrentVolume(VOLUME_MINIMUM);
+    message = dbus_message_new_method_call (AMPSERVER_BUS_NAME,
+                                            AMPSERVER_BUS_PATH,
+                                            AMPSERVER_BUS_NAME,
+                                            "mute");
+  }
+  else {
+    //SetCurrentVolume(m_nCurrentVolume);
+    message = dbus_message_new_method_call (AMPSERVER_BUS_NAME,
+                                            AMPSERVER_BUS_PATH,
+                                            AMPSERVER_BUS_NAME,
+                                            "unmute");
+  }
+  dbus_connection_send (connection, message, NULL); 
 }
 
 //***********************************************************************************************
 bool CALSADirectSound::SetCurrentVolume(long nVolume)
 {
   if (!m_bIsAllocated) return -1;
+  //m_nCurrentVolume = GetCurrentVolume();
+  DBusMessage *message;
+  dbus_int32_t diff;
+
+  CLog::Log(LOGWARNING,"CALSADirectSound::SetCurrentVolume - m_nCurrentVolume (%d) nVolume (%d)", m_nCurrentVolume, nVolume);
+
+  if (m_nCurrentVolume > nVolume) {
+      message = dbus_message_new_method_call (AMPSERVER_BUS_NAME,
+                                              AMPSERVER_BUS_PATH,
+                                              AMPSERVER_BUS_NAME,
+                                              "volumedown");
+      diff = (m_nCurrentVolume - nVolume) / AUDIO_GAP;
+      CLog::Log(LOGWARNING,"CALSADirectSound::SetCurrentVolume - diff (%d)", diff);
+  } else {
+      message = dbus_message_new_method_call (AMPSERVER_BUS_NAME,
+                                               AMPSERVER_BUS_PATH,
+                                               AMPSERVER_BUS_NAME,
+                                               "volumeup");
+      diff = (nVolume - m_nCurrentVolume) / AUDIO_GAP;
+      CLog::Log(LOGWARNING,"CALSADirectSound::SetCurrentVolume - diff (%d)", diff);
+  }
+  
+  dbus_message_append_args (message, DBUS_TYPE_INT32, &diff, DBUS_TYPE_INVALID);
+  dbus_connection_send (connection, message, NULL);
+
   m_nCurrentVolume = nVolume;
-  m_amp.SetVolume(nVolume);
+  m_amp.SetVolume(VOLUME_MAXIMUM);
   return true;
 }
 
