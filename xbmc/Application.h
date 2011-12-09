@@ -63,6 +63,13 @@ namespace ADDON
 #include "network/WebServer.h"
 #endif
 
+#include <dbus/dbus.h>
+
+#define AMPSERVER_BUS_NAME "uk.co.madeo.ampserver"
+#define AMPSERVER_BUS_PATH "/uk/co/madeo/ampserver"
+#define DBUS_REPLY_TIMEOUT -1
+#define AUDIO_GAP 120
+
 class CKaraokeLyricsManager;
 class CInertialScrollingHandler;
 class CApplicationMessenger;
@@ -389,6 +396,13 @@ protected:
   std::map<std::string, std::map<int, float> > m_lastAxisMap;
 #endif
 
+  // DBus stuff
+  virtual long GetAmpVolume();
+  virtual void ConnectAmp();
+  virtual void SetAmpVolume(long nVolume);
+  DBusConnection *connection;
+  DBusError error;
+  // end of DBus stuff
 };
 
 extern CApplication g_application;

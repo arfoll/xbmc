@@ -31,7 +31,6 @@
 
 #include "IAudioRenderer.h"
 #include "cores/IAudioCallback.h"
-#include <dbus/dbus.h>
 
 #define ALSA_PCM_NEW_HW_PARAMS_API
 #include <alsa/asoundlib.h>
@@ -94,9 +93,6 @@ private:
   unsigned int m_uiChannels;
 
   bool m_bPassthrough;
-
-  DBusConnection *connection;
-  DBusError error;
 };
 
 #endif

@@ -765,7 +765,85 @@ bool CApplication::Create()
   m_lastFrameTime = XbmcThreads::SystemClockMillis();
   m_lastRenderTime = m_lastFrameTime;
 
+  dbus_error_init (&error);
+  ConnectAmp();
+
   return Initialize();
+}
+
+void CApplication::ConnectAmp()
+{
+  connection = dbus_bus_get (DBUS_BUS_SYSTEM, &error);
+  if (connection != NULL)
+      g_settings.m_nVolumeLevel = GetAmpVolume();
+}
+
+long CApplication::GetAmpVolume()
+{
+  if (connection == NULL) {
+      ConnectAmp();
+      return g_settings.m_nVolumeLevel;
+  }
+
+  DBusMessage *message, *reply;
+  DBusError replyError;
+  dbus_int32_t vol = 0;
+  message = dbus_message_new_method_call (AMPSERVER_BUS_NAME,
+                                          AMPSERVER_BUS_PATH,
+                                          AMPSERVER_BUS_NAME,
+                                          "getvolume");
+
+  dbus_error_init (&replyError);
+  reply = dbus_connection_send_with_reply_and_block (connection, message, DBUS_REPLY_TIMEOUT, &replyError);
+  if (reply != NULL) {
+      DBusMessageIter args;
+      int type;
+
+      if (dbus_message_iter_init(reply, &args)) {
+        type = dbus_message_iter_get_arg_type (&args);
+        if (type == DBUS_TYPE_INT32)
+            dbus_message_iter_get_basic(&args, &vol);
+        dbus_message_unref (reply);
+      }
+  }
+
+  dbus_message_unref (message);
+  dbus_error_free (&replyError);
+
+  return (long) (vol * AUDIO_GAP);
+}
+
+void CApplication::SetAmpVolume(long nVolume)
+{
+  if (connection == NULL)
+      ConnectAmp();
+
+  DBusMessage *message;
+  dbus_int32_t diff;
+
+  // it seems XBMC sometimes tries to set the volume to +120
+  if (nVolume > 0 && nVolume < 6000)
+      return;
+
+  if (g_settings.m_nVolumeLevel > nVolume) {
+      message = dbus_message_new_method_call (AMPSERVER_BUS_NAME,
+                                              AMPSERVER_BUS_PATH,
+                                              AMPSERVER_BUS_NAME,
+                                              "volumedown");
+      diff = (g_settings.m_nVolumeLevel - nVolume) / AUDIO_GAP;
+      CLog::Log(LOGWARNING,"CApplication::SetAmpVolume - diff (%d)", diff);
+  } else {
+      message = dbus_message_new_method_call (AMPSERVER_BUS_NAME,
+                                              AMPSERVER_BUS_PATH,
+                                              AMPSERVER_BUS_NAME,
+                                              "volumeup");
+      diff = (nVolume - g_settings.m_nVolumeLevel) / AUDIO_GAP;
+      CLog::Log(LOGWARNING,"CApplication::SetAmpVolume - diff (%d)", diff);
+  }
+
+  dbus_message_append_args (message, DBUS_TYPE_INT32, &diff, DBUS_TYPE_INVALID);
+  dbus_connection_send (connection, message, NULL);
+  dbus_message_unref (message);
 }
 
 bool CApplication::InitDirectoriesLinux()
@@ -2539,8 +2617,9 @@ bool CApplication::OnAction(const CAction &action)
         volume = (int)((float)g_settings.m_iPreMuteVolumeLevel * 0.01f * (VOLUME_MAXIMUM - VOLUME_MINIMUM) + VOLUME_MINIMUM);
         UnMute();
       }
-      else
+      else {
         volume = g_settings.m_nVolumeLevel + g_settings.m_dynamicRangeCompressionLevel;
+      }
 
       // calculate speed so that a full press will equal 1 second from min to max
       float speed = float(VOLUME_MAXIMUM - VOLUME_MINIMUM);
@@ -4962,6 +5041,7 @@ void CApplication::UnMute()
 
 void CApplication::SetVolume(long iValue, bool isPercentage /* = true */)
 {
+#if 0
   // convert the percentage to a mB (milliBell) value (*100 for dB)
   if (isPercentage)
     iValue = (long)((float)iValue * 0.01f * (VOLUME_MAXIMUM - VOLUME_MINIMUM) + VOLUME_MINIMUM);
@@ -4972,6 +5052,16 @@ void CApplication::SetVolume(long iValue, bool isPercentage /* = true */)
 #else
   g_audioManager.SetVolume((int)(128.f * (g_settings.m_nVolumeLevel - VOLUME_MINIMUM) / (float)(VOLUME_MAXIMUM - VOLUME_MINIMUM)));
 #endif
+#endif
+  if ((int) iValue >= VOLUME_MAXIMUM)
+      g_settings.m_nVolumeLevel = VOLUME_MAXIMUM;
+  else if ((int)iValue <= VOLUME_MINIMUM)
+      g_settings.m_nVolumeLevel = VOLUME_MINIMUM;
+  else
+      g_settings.m_nVolumeLevel = iValue;
+
+  fprintf (stdout, "Setting Vol to : %d\n", g_settings.m_nVolumeLevel);
+  SetAmpVolume (g_settings.m_nVolumeLevel);
 }
 
 void CApplication::SetHardwareVolume(long hardwareVolume)
