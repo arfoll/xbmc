@@ -52,7 +52,6 @@
 #ifdef HAS_FILESYSTEM_RAR
 #include "filesystem/RarManager.h"
 #endif
-#include "filesystem/MythDirectory.h"
 #ifdef HAS_UPNP
 #include "filesystem/UPnPDirectory.h"
 #endif
@@ -201,10 +200,6 @@ CStdString CUtil::GetTitleFromPath(const CStdString& strFileNameAndPath, bool bI
   else if (url.GetProtocol() == "vtp")
     strFilename = g_localizeStrings.Get(20257);
   
-  // MythTV client
-  else if (url.GetProtocol() == "myth")
-    strFilename = g_localizeStrings.Get(20258);
-
   // SAP Streams
   else if (url.GetProtocol() == "sap" && strFilename.IsEmpty())
     strFilename = "SAP Streams";
@@ -1898,17 +1893,6 @@ bool CUtil::SupportsFileOperations(const CStdString& strPath)
     return true;
   if (URIUtils::IsAfp(strPath))
     return true;
-  if (URIUtils::IsMythTV(strPath))
-  {
-#ifdef HAS_MYSQL
-    /*
-     * Can't use CFile::Exists() to check whether the myth:// path supports file operations because
-     * it hits the directory cache on the way through, which has the Live Channels and Guide
-     * items cached.
-     */
-    return CMythDirectory::SupportsFileOperations(strPath);
-#endif
-  }
   if (URIUtils::IsStack(strPath))
     return SupportsFileOperations(CStackDirectory::GetFirstStackedFile(strPath));
   if (URIUtils::IsMultiPath(strPath))

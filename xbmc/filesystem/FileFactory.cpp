@@ -42,9 +42,6 @@
 #endif
 #ifdef HAS_FILESYSTEM
 #include "FileISO.h"
-#ifdef HAS_FILESYSTEM_DAAP
-#include "FileDAAP.h"
-#endif
 #endif
 #ifdef HAS_FILESYSTEM_SAP
 #include "SAPFile.h"
@@ -73,7 +70,6 @@
 #include "MultiPathFile.h"
 #include "FileTuxBox.h"
 #include "FileUDF.h"
-#include "MythFile.h"
 #include "HDHomeRun.h"
 #include "Slingbox.h"
 #include "Application.h"
@@ -135,8 +131,6 @@ IFile* CFileFactory::CreateLoader(const CURL& url)
     else if (strProtocol == "shout") return new CFileShoutcast();
     else if (strProtocol == "lastfm") return new CFileLastFM();
     else if (strProtocol == "tuxbox") return new CFileTuxBox();
-    else if (strProtocol == "myth") return new CMythFile();
-    else if (strProtocol == "cmyth") return new CMythFile();
 #ifdef HAS_FILESYSTEM_SMB
 #ifdef _WIN32
     else if (strProtocol == "smb") return new CWINFileSMB();
@@ -145,9 +139,6 @@ IFile* CFileFactory::CreateLoader(const CURL& url)
 #endif
 #endif
 #ifdef HAS_FILESYSTEM
-#ifdef HAS_FILESYSTEM_DAAP
-    else if (strProtocol == "daap") return new CFileDAAP();
-#endif
 #endif
 #ifdef HAS_FILESYSTEM_SAP
     else if (strProtocol == "sap") return new CSAPFile();

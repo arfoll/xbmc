@@ -23,7 +23,6 @@
 #include "Application.h"
 #include "FileItem.h"
 #include "filesystem/MultiPathDirectory.h"
-#include "filesystem/MythDirectory.h"
 #include "filesystem/SpecialProtocol.h"
 #include "filesystem/StackDirectory.h"
 #include "network/DNSNameCache.h"
@@ -698,11 +697,6 @@ bool URIUtils::IsUPnP(const CStdString& strFile)
 bool URIUtils::IsTuxBox(const CStdString& strFile)
 {
   return strFile.Left(7).Equals("tuxbox:");
-}
-
-bool URIUtils::IsMythTV(const CStdString& strFile)
-{
-  return strFile.Left(5).Equals("myth:");
 }
 
 bool URIUtils::IsHDHomeRun(const CStdString& strFile)

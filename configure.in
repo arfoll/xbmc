@@ -684,18 +684,11 @@ else
 fi
 
 # platform common libraries
-AC_CHECK_HEADER([ass/ass.h],, AC_MSG_ERROR($missing_library))
-AC_CHECK_HEADER([mpeg2dec/mpeg2.h],, AC_MSG_ERROR($missing_library))
-AC_CHECK_HEADER([mpeg2dec/mpeg2convert.h],, AC_MSG_ERROR($missing_library),
-  AC_INCLUDES_DEFAULT()
-  [#include <mpeg2dec/mpeg2.h>])
-AC_CHECK_HEADER([mad.h],,            AC_MSG_ERROR($missing_library))
 AC_CHECK_HEADER([jpeglib.h],,        AC_MSG_ERROR($missing_library))
 AC_CHECK_HEADER([samplerate.h],,     AC_MSG_ERROR($missing_library))
 AC_CHECK_HEADER([ogg/ogg.h],,        AC_MSG_ERROR($missing_library))
 AC_CHECK_HEADER([vorbis/vorbisfile.h],, AC_MSG_ERROR($missing_library))
 AC_CHECK_HEADER([vorbis/vorbisenc.h],, AC_MSG_ERROR($missing_library))
-AC_CHECK_HEADER([libmodplug/modplug.h],, AC_MSG_ERROR($missing_library))
 AC_CHECK_HEADER([curl/curl.h],, AC_MSG_ERROR($missing_library))
 AC_CHECK_HEADER([FLAC/stream_decoder.h],, AC_MSG_ERROR($missing_library))
 
@@ -831,16 +824,12 @@ else
   fi
 fi
 
-XB_FIND_SONAME([MAD],         [mad])
 XB_FIND_SONAME([OGG],         [ogg])
 XB_FIND_SONAME([CURL],        [curl])
 XB_FIND_SONAME([FLAC],        [FLAC])
 XB_FIND_SONAME([VORBIS],      [vorbis])
 XB_FIND_SONAME([VORBISENC],   [vorbisenc])
 XB_FIND_SONAME([VORBISFILE],  [vorbisfile])
-XB_FIND_SONAME([MODPLUG],     [modplug])
-XB_FIND_SONAME([ASS],         [ass])
-XB_FIND_SONAME([MPEG2],       [mpeg2])
 
 # WebServer
 if test "$use_webserver" = "yes"; then
@@ -1878,12 +1867,6 @@ OUTPUT_FILES="Makefile \
     lib/Makefile \
     xbmc/cores/DllLoader/Makefile \
     xbmc/cores/AudioRenderers/Makefile \
-    lib/timidity/Makefile \
-    lib/nosefart/Makefile \
-    lib/libsidplay2/Makefile \
-    lib/vgmstream/Makefile \
-    lib/snesapu/SNES/SNESAPU/Makefile \
-    lib/stsound/StSoundLibrary/Makefile \
     xbmc/cores/playercorefactory/Makefile \
     xbmc/music/karaoke/Makefile \
     xbmc/osx/Makefile \
@@ -1891,8 +1874,6 @@ OUTPUT_FILES="Makefile \
     xbmc/interfaces/Makefile \
     xbmc/network/Makefile \
     lib/libexif/Makefile \
-    lib/libXDAAP/Makefile \
-    lib/cmyth/Makefile \
     lib/libsquish/Makefile \
     lib/libid3tag/Makefile \
     lib/cximage-6.0/Makefile \

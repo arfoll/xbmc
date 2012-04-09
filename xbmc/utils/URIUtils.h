@@ -70,7 +70,6 @@ public:
   static bool IsLiveTV(const CStdString& strFile);
   static bool IsMultiPath(const CStdString& strPath);
   static bool IsMusicDb(const CStdString& strFile);
-  static bool IsMythTV(const CStdString& strFile);
   static bool IsNfs(const CStdString& strFile);  
   static bool IsAfp(const CStdString& strFile);    
   static bool IsOnDVD(const CStdString& strFile);

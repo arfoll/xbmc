@@ -17,7 +17,6 @@ SRCS=APEv2Tag.cpp \
      MusicInfoTagLoaderNSF.cpp \
      MusicInfoTagLoaderOgg.cpp \
      MusicInfoTagLoaderShn.cpp \
-     MusicInfoTagLoaderSPC.cpp \
      MusicInfoTagLoaderWav.cpp \
      MusicInfoTagLoaderWavPack.cpp \
      MusicInfoTagLoaderWMA.cpp \

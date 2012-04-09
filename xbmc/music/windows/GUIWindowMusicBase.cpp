@@ -25,9 +25,6 @@
 #include "GUIWindowMusicBase.h"
 #include "music/dialogs/GUIDialogMusicInfo.h"
 #include "filesystem/ZipManager.h"
-#ifdef HAS_FILESYSTEM_DAAP
-#include "filesystem/DAAPDirectory.h"
-#endif
 #include "playlists/PlayListFactory.h"
 #include "Util.h"
 #include "playlists/PlayListM3U.h"
@@ -1063,14 +1060,6 @@ void CGUIWindowMusicBase::PlayItem(int iItem)
 
   // special case for DAAP playlist folders
   bool bIsDAAPplaylist = false;
-#ifdef HAS_FILESYSTEM_DAAP
-  if (pItem->IsDAAP() && pItem->m_bIsFolder)
-  {
-    CDAAPDirectory dirDAAP;
-    if (dirDAAP.GetCurrLevel(pItem->GetPath()) == 0)
-      bIsDAAPplaylist = true;
-  }
-#endif
   // if its a folder, build a playlist
   if ((pItem->m_bIsFolder && !pItem->IsPlugin()) || (g_windowManager.GetActiveWindow() == WINDOW_MUSIC_NAV && pItem->IsPlayList()))
   {

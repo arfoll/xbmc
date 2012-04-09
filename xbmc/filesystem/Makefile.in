@@ -8,7 +8,6 @@ SRCS=AddonsDirectory.cpp \
      CacheMemBuffer.cpp \
      CacheStrategy.cpp \
      CDDADirectory.cpp \
-     DAAPDirectory.cpp \
      DAVDirectory.cpp \
      DirectoryCache.cpp \
      Directory.cpp \
@@ -21,7 +20,6 @@ SRCS=AddonsDirectory.cpp \
      FileCDDA.cpp \
      File.cpp \
      FileCurl.cpp \
-     FileDAAP.cpp \
      FileFactory.cpp \
      FileFileReader.cpp \
      FileHD.cpp \
@@ -39,8 +37,6 @@ SRCS=AddonsDirectory.cpp \
      FTPDirectory.cpp \
      FTPParse.cpp \
      HDDirectory.cpp \
-     HTSPDirectory.cpp \
-     HTSPSession.cpp \
      HTTPDirectory.cpp \
      IDirectory.cpp \
      IFile.cpp \
@@ -52,9 +48,6 @@ SRCS=AddonsDirectory.cpp \
      MusicDatabaseDirectory.cpp \
      MusicFileDirectory.cpp \
      MusicSearchDirectory.cpp \
-     MythDirectory.cpp \
-     MythFile.cpp \
-     MythSession.cpp \
      NptXbmcFile.cpp \
      NSFFileDirectory.cpp \
      OGGFileDirectory.cpp \
