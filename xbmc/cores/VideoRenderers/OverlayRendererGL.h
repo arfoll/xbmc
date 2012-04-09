@@ -28,11 +28,6 @@
 #include <GL/glew.h>
 #endif
 
-class CDVDOverlay;
-class CDVDOverlayImage;
-class CDVDOverlaySpu;
-class CDVDOverlaySSA;
-
 #if defined(HAS_GL) || HAS_GLES == 2
 
 namespace OVERLAY {
@@ -41,8 +36,6 @@ namespace OVERLAY {
       : public COverlayMainThread
   {
   public:
-     COverlayTextureGL(CDVDOverlayImage* o);
-     COverlayTextureGL(CDVDOverlaySpu* o);
     virtual ~COverlayTextureGL();
 
     void Render(SRenderState& state);
@@ -56,7 +49,6 @@ namespace OVERLAY {
      : public COverlayMainThread
   {
   public:
-   COverlayGlyphGL(CDVDOverlaySSA* o, double pts);
    virtual ~COverlayGlyphGL();
 
    void Render(SRenderState& state);

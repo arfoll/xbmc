@@ -26,6 +26,7 @@
 #include "utils/MathUtils.h"
 #include "threads/SingleLock.h"
 #include "utils/log.h"
+#include "utils/TimeUtils.h"
 
 #include "Application.h"
 #include "settings/Settings.h"
@@ -47,11 +48,6 @@
 #endif
 
 #include "RenderCapture.h"
-
-/* to use the same as player */
-#include "../dvdplayer/DVDClock.h"
-#include "../dvdplayer/DVDCodecs/Video/DVDVideoCodec.h"
-#include "../dvdplayer/DVDCodecs/DVDCodecUtils.h"
 
 #define MAXPRESENTDELAY 0.500
 
@@ -115,7 +111,7 @@ CXBMCRenderManager::~CXBMCRenderManager()
 /* These is based on CurrentHostCounter() */
 double CXBMCRenderManager::GetPresentTime()
 {
-  return CDVDClock::GetAbsoluteClock(false) / DVD_TIME_BASE;
+  return CurrentHostCounter();
 }
 
 static double wrap(double x, double minimum, double maximum)
@@ -133,68 +129,6 @@ static double wrap(double x, double minimum, double maximum)
 
 void CXBMCRenderManager::WaitPresentTime(double presenttime)
 {
-  double frametime;
-  int fps = g_VideoReferenceClock.GetRefreshRate(&frametime);
-  if(fps <= 0)
-  {
-    /* smooth video not enabled */
-    CDVDClock::WaitAbsoluteClock(presenttime * DVD_TIME_BASE);
-    return;
-  }
-
-  bool ismaster = CDVDClock::IsMasterClock();
-
-  //the videoreferenceclock updates its clock on every vertical blank
-  //we want every frame's presenttime to end up in the middle of two vblanks
-  //if CDVDPlayerAudio is the master clock, we add a correction to the presenttime
-  if (ismaster)
-    presenttime += m_presentcorr * frametime;
-
-  double clock     = CDVDClock::WaitAbsoluteClock(presenttime * DVD_TIME_BASE) / DVD_TIME_BASE;
-  double target    = 0.5;
-  double error     = ( clock - presenttime ) / frametime - target;
-
-  m_presenterr     = error;
-
-  // correct error so it targets the closest vblank
-  error = wrap(error, 0.0 - target, 1.0 - target);
-
-  // scale the error used for correction,
-  // based on how much buffer we have on
-  // that side of the target
-  if(error > 0)
-    error /= 2.0 * (1.0 - target);
-  if(error < 0)
-    error /= 2.0 * (0.0 + target);
-
-  //save error in the buffer
-  m_errorindex = (m_errorindex + 1) % ERRORBUFFSIZE;
-  m_errorbuff[m_errorindex] = error;
-
-  //get the average error from the buffer
-  double avgerror = 0.0;
-  for (int i = 0; i < ERRORBUFFSIZE; i++)
-    avgerror += m_errorbuff[i];
-
-  avgerror /= ERRORBUFFSIZE;
-
-
-  //if CDVDPlayerAudio is not the master clock, we change the clock speed slightly
-  //to make every frame's presenttime end up in the middle of two vblanks
-  if (!ismaster)
-  {
-    //integral correction, clamp to -0.5:0.5 range
-    m_presentcorr = std::max(std::min(m_presentcorr + avgerror * 0.01, 0.1), -0.1);
-    g_VideoReferenceClock.SetFineAdjust(1.0 - avgerror * 0.01 - m_presentcorr * 0.01);
-  }
-  else
-  {
-    //integral correction, wrap to -0.5:0.5 range
-    m_presentcorr = wrap(m_presentcorr + avgerror * 0.01, target - 1.0, target);
-    g_VideoReferenceClock.SetFineAdjust(1.0);
-  }
-
-  //printf("%f %f % 2.0f%% % f % f\n", presenttime, clock, m_presentcorr * 100, error, error_org);
 }
 
 CStdString CXBMCRenderManager::GetVSyncState()
@@ -740,60 +674,6 @@ void CXBMCRenderManager::UpdateResolution()
     }
     m_bReconfigured = false;
   }
-}
-
-
-int CXBMCRenderManager::AddVideoPicture(DVDVideoPicture& pic)
-{
-  CSharedLock lock(m_sharedSection);
-  if (!m_pRenderer)
-    return -1;
-
-  if(m_pRenderer->AddVideoPicture(&pic))
-    return 1;
-
-  YV12Image image;
-  int index = m_pRenderer->GetImage(&image);
-
-  if(index < 0)
-    return index;
-
-  if(pic.format == DVDVideoPicture::FMT_YUV420P)
-  {
-    CDVDCodecUtils::CopyPicture(&image, &pic);
-  }
-  else if(pic.format == DVDVideoPicture::FMT_NV12)
-  {
-    CDVDCodecUtils::CopyNV12Picture(&image, &pic);
-  }
-  else if(pic.format == DVDVideoPicture::FMT_YUY2
-       || pic.format == DVDVideoPicture::FMT_UYVY)
-  {
-    CDVDCodecUtils::CopyYUV422PackedPicture(&image, &pic);
-  }
-  else if(pic.format == DVDVideoPicture::FMT_DXVA)
-  {
-    CDVDCodecUtils::CopyDXVA2Picture(&image, &pic);
-  }
-#ifdef HAVE_LIBVDPAU
-  else if(pic.format == DVDVideoPicture::FMT_VDPAU)
-    m_pRenderer->AddProcessor(pic.vdpau);
-#endif
-#ifdef HAVE_LIBOPENMAX
-  else if(pic.format == DVDVideoPicture::FMT_OMXEGL)
-    m_pRenderer->AddProcessor(pic.openMax, &pic);
-#endif
-#ifdef HAVE_VIDEOTOOLBOXDECODER
-  else if(pic.format == DVDVideoPicture::FMT_CVBREF)
-    m_pRenderer->AddProcessor(pic.vtb, &pic);
-#endif
-#ifdef HAVE_LIBVA
-  else if(pic.format == DVDVideoPicture::FMT_VAAPI)
-    m_pRenderer->AddProcessor(*pic.vaapi);
-#endif
-  m_pRenderer->ReleaseImage(index, false);
-
-  return index;
 }
 
 EINTERLACEMETHOD CXBMCRenderManager::AutoInterlaceMethodInternal(EINTERLACEMETHOD mInt)

@@ -22,7 +22,6 @@
 
 #include <math.h>
 #include "ImusicInfoTagLoader.h"
-#include "cores/paplayer/ReplayGain.h"
 
 namespace MUSIC_INFO
 {
@@ -115,7 +114,6 @@ public:
   virtual ~CMusicInfoTagLoaderMP3();
   virtual bool Load(const CStdString& strFileName, CMusicInfoTag& tag);
   void GetSeekInfo(CVBRMP3SeekHelper &info) const;
-  bool GetReplayGain(CReplayGain &info) const;
   bool ReadSeekAndReplayGainInfo(const CStdString &strFileName);
   static unsigned int IsID3v2Header(unsigned char* pBuf, size_t bufLen);
 protected:
@@ -126,6 +124,5 @@ protected:
 
 private:
   CVBRMP3SeekHelper m_seekInfo;
-  CReplayGain       m_replayGainInfo;
 };
 }

@@ -22,7 +22,6 @@
 //------------------------------
 // CApeTag in 2005 by JMarshall
 //------------------------------
-#include "cores/paplayer/ReplayGain.h"
 #include "DllLibapetag.h"
 
 namespace MUSIC_INFO
@@ -53,7 +52,6 @@ public:
   CStdString GetLyrics() { return m_strLyrics; };
   char GetRating() { return m_rating; };
   void GetReplayGainFromTag(apetag *tag);
-  const CReplayGain &GetReplayGain() { return m_replayGain; };
 
   static size_t fread_callback(void *ptr, size_t size, size_t nmemb, void *fp);  
   static int fseek_callback(void *fp, long int offset, int whence);
@@ -75,7 +73,6 @@ protected:
   CStdString m_strMusicBrainzTRMID;
   CStdString m_strComment;
   CStdString m_strLyrics;
-  CReplayGain m_replayGain;
   int64_t m_nDuration;
   char m_rating;
 

@@ -43,7 +43,6 @@ class CRenderCapture;
 namespace DXVA { class CProcessor; }
 namespace VAAPI { class CSurfaceHolder; }
 class CVDPAU;
-struct DVDVideoPicture;
 
 #define ERRORBUFFSIZE 30
 
@@ -71,18 +70,11 @@ public:
   bool Configure(unsigned int width, unsigned int height, unsigned int d_width, unsigned int d_height, float fps, unsigned flags, unsigned int format);
   bool IsConfigured();
 
-  int AddVideoPicture(DVDVideoPicture& picture);
 
   void FlipPage(volatile bool& bStop, double timestamp = 0.0, int source = -1, EFIELDSYNC sync = FS_NONE);
   unsigned int PreInit();
   void UnInit();
   bool Flush();
-
-  void AddOverlay(CDVDOverlay* o, double pts)
-  {
-    CSharedLock lock(m_sharedSection);
-    m_overlays.AddOverlay(o, pts);
-  }
 
   void AddCleanup(OVERLAY::COverlay* o)
   {

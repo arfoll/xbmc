@@ -22,9 +22,6 @@
 #include "utils/BitstreamStats.h"
 #include "PlayerCoreFactory.h"
 #include "threads/SingleLock.h"
-#include "cores/dvdplayer/DVDPlayer.h"
-#include "cores/paplayer/PAPlayer.h"
-#include "cores/paplayer/DVDPlayerCodec.h"
 #include "dialogs/GUIDialogContextMenu.h"
 #include "utils/HttpHeader.h"
 #include "settings/GUISettings.h"
@@ -144,44 +141,6 @@ void CPlayerCoreFactory::GetPlayers( const CFileItem& item, VECPLAYERCORES &vecC
     s_vecCoreSelectionRules[i]->GetPlayers(item, vecCores);
 
   CLog::Log(LOGDEBUG, "CPlayerCoreFactory::GetPlayers: matched %"PRIuS" rules with players", vecCores.size());
-
-  if( PAPlayer::HandlesType(url.GetFileType()) )
-  {
-    // We no longer force PAPlayer as our default audio player (used to be true):
-    bool bAdd = false;
-    if (url.GetProtocol().Equals("mms"))
-    {
-       bAdd = false;
-    }
-    else if (item.IsType(".wma"))
-    {
-//      bAdd = true;
-//      DVDPlayerCodec codec;
-//      if (!codec.Init(item.GetPath(),2048))
-//        bAdd = false;
-//      codec.DeInit();
-    }
-
-    if (bAdd)
-    {
-      if( g_guiSettings.GetInt("audiooutput.mode") == AUDIO_ANALOG )
-      {
-        CLog::Log(LOGDEBUG, "CPlayerCoreFactory::GetPlayers: adding PAPlayer (%d)", EPC_PAPLAYER);
-        vecCores.push_back(EPC_PAPLAYER);
-      }
-      else if (url.GetFileType().Equals("ac3") 
-            || url.GetFileType().Equals("dts"))
-      {
-        CLog::Log(LOGDEBUG, "CPlayerCoreFactory::GetPlayers: adding DVDPlayer (%d)", EPC_DVDPLAYER);
-        vecCores.push_back(EPC_DVDPLAYER);
-      }
-      else
-      {
-        CLog::Log(LOGDEBUG, "CPlayerCoreFactory::GetPlayers: adding PAPlayer (%d)", EPC_PAPLAYER);
-        vecCores.push_back(EPC_PAPLAYER);
-      }
-    }
-  }
 
   // Process defaults
 

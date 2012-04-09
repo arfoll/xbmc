@@ -42,9 +42,6 @@
 #endif
 #ifdef HAS_FILESYSTEM
 #include "FileISO.h"
-#ifdef HAS_FILESYSTEM_RTV
-#include "FileRTV.h"
-#endif
 #ifdef HAS_FILESYSTEM_DAAP
 #include "FileDAAP.h"
 #endif
@@ -138,8 +135,6 @@ IFile* CFileFactory::CreateLoader(const CURL& url)
     else if (strProtocol == "shout") return new CFileShoutcast();
     else if (strProtocol == "lastfm") return new CFileLastFM();
     else if (strProtocol == "tuxbox") return new CFileTuxBox();
-    else if (strProtocol == "hdhomerun") return new CFileHomeRun();
-    else if (strProtocol == "sling") return new CSlingboxFile();
     else if (strProtocol == "myth") return new CMythFile();
     else if (strProtocol == "cmyth") return new CMythFile();
 #ifdef HAS_FILESYSTEM_SMB
@@ -150,9 +145,6 @@ IFile* CFileFactory::CreateLoader(const CURL& url)
 #endif
 #endif
 #ifdef HAS_FILESYSTEM
-#ifdef HAS_FILESYSTEM_RTV
-    else if (strProtocol == "rtv") return new CFileRTV();
-#endif
 #ifdef HAS_FILESYSTEM_DAAP
     else if (strProtocol == "daap") return new CFileDAAP();
 #endif

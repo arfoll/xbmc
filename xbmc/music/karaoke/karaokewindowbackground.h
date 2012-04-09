@@ -29,7 +29,6 @@
 class CGUIWindow;
 class CGUIImage;
 class CGUIVisualisationControl;
-class CDVDPlayer;
 
 class CKaraokeWindowBackground : public IPlayerCallback
 {
@@ -99,8 +98,6 @@ private:
   // Parent window pointer
   CGUIWindow               * m_parentWindow;
 
-  // Video player pointer
-  CDVDPlayer               * m_videoPlayer;
   bool                       m_videoEnded;
 
   // For default visualisation mode

@@ -1,6 +1,5 @@
 SRCS=Bookmark.cpp \
      GUIViewStateVideo.cpp \
-     Teletext.cpp \
      VideoDatabase.cpp \
      VideoInfoDownloader.cpp \
      VideoInfoScanner.cpp \

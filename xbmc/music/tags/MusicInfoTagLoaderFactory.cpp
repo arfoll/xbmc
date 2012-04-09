@@ -164,11 +164,6 @@ IMusicInfoTagLoader* CMusicInfoTagLoaderFactory::CreateLoader(const CStdString& 
     return (IMusicInfoTagLoader*)pTagLoader;
   }
 #endif
-  else if ( TimidityCodec::IsSupportedFormat( strExtension ) )
-  {
-    CMusicInfoTagLoaderMidi * pTagLoader = new CMusicInfoTagLoaderMidi();
-    return (IMusicInfoTagLoader*)pTagLoader;
-  }
 
   return NULL;
 }

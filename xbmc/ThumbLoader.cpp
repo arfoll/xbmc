@@ -36,7 +36,6 @@
 #include "programs/Shortcut.h"
 #include "video/VideoInfoTag.h"
 #include "video/VideoDatabase.h"
-#include "cores/dvdplayer/DVDFileInfo.h"
 
 using namespace XFILE;
 using namespace std;
@@ -122,38 +121,7 @@ bool CThumbExtractor::operator==(const CJob* job) const
 
 bool CThumbExtractor::DoWork()
 {
-  if (URIUtils::IsLiveTV(m_path)
-  ||  URIUtils::IsUPnP(m_path)
-  ||  URIUtils::IsDAAP(m_path)
-  ||  m_item.IsDVD()
-  ||  m_item.IsDVDImage()
-  ||  m_item.IsDVDFile(false, true)
-  ||  m_item.IsInternetStream()
-  ||  m_item.IsPlayList())
-    return false;
-
-  if (URIUtils::IsRemote(m_path) && !URIUtils::IsOnLAN(m_path))
-    return false;
-
-  bool result=false;
-  if (m_thumb)
-  {
-    CLog::Log(LOGDEBUG,"%s - trying to extract thumb from video file %s", __FUNCTION__, m_path.c_str());
-    result = CDVDFileInfo::ExtractThumb(m_path, m_target, &m_item.GetVideoInfoTag()->m_streamDetails);
-    if(result)
-    {
-      m_item.SetProperty("HasAutoThumb", true);
-      m_item.SetProperty("AutoThumbImage", m_target);
-      m_item.SetThumbnailImage(m_target);
-    }
-  }
-  else if (m_item.HasVideoInfoTag() && !m_item.GetVideoInfoTag()->HasStreamDetails())
-  {
-    CLog::Log(LOGDEBUG,"%s - trying to extract filestream details from video file %s", __FUNCTION__, m_path.c_str());
-    result = CDVDFileInfo::GetFileStreamDetails(&m_item);
-  }
-
-  return result;
+  return false;
 }
 
 CVideoThumbLoader::CVideoThumbLoader() :

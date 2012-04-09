@@ -101,8 +101,6 @@ bool CID3Tag::Read(const CStdString& strFile)
 
 bool CID3Tag::Parse()
 {
-  ParseReplayGainInfo();
-
   CMusicInfoTag& tag=m_musicInfoTag;
 
   tag.SetTrackNumber(GetTrack());
@@ -570,33 +568,4 @@ CStdString CID3Tag::ParseMP3Genre(const CStdString& str) const
     strGenre += strTemp;
   }
   return strGenre;
-}
-
-
-void CID3Tag::ParseReplayGainInfo()
-{
-  CStdString strGain = GetUserText("replaygain_track_gain");
-  if (!strGain.IsEmpty())
-  {
-    m_replayGain.iTrackGain = (int)(atof(strGain.c_str()) * 100 + 0.5);
-    m_replayGain.iHasGainInfo |= REPLAY_GAIN_HAS_TRACK_INFO;
-  }
-  strGain = GetUserText("replaygain_album_gain");
-  if (!strGain.IsEmpty())
-  {
-    m_replayGain.iAlbumGain = (int)(atof(strGain.c_str()) * 100 + 0.5);
-    m_replayGain.iHasGainInfo |= REPLAY_GAIN_HAS_ALBUM_INFO;
-  }
-  strGain = GetUserText("replaygain_track_peak");
-  if (!strGain.IsEmpty())
-  {
-    m_replayGain.fTrackPeak = (float)atof(strGain.c_str());
-    m_replayGain.iHasGainInfo |= REPLAY_GAIN_HAS_TRACK_PEAK;
-  }
-  strGain = GetUserText("replaygain_album_peak");
-  if (!strGain.IsEmpty())
-  {
-    m_replayGain.fAlbumPeak = (float)atof(strGain.c_str());
-    m_replayGain.iHasGainInfo |= REPLAY_GAIN_HAS_ALBUM_PEAK;
-  }
 }

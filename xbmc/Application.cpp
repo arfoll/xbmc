@@ -30,7 +30,6 @@
 #include "Util.h"
 #include "pictures/Picture.h"
 #include "guilib/TextureManager.h"
-#include "cores/dvdplayer/DVDFileInfo.h"
 #include "PlayListPlayer.h"
 #include "Autorun.h"
 #include "video/Bookmark.h"
@@ -249,7 +248,6 @@
 #include "network/GUIDialogAccessPoints.h"
 #endif
 #include "video/dialogs/GUIDialogFullScreenInfo.h"
-#include "video/dialogs/GUIDialogTeletext.h"
 #include "dialogs/GUIDialogSlider.h"
 #include "guilib/GUIControlFactory.h"
 #include "dialogs/GUIDialogCache.h"
@@ -1089,7 +1087,6 @@ bool CApplication::Initialize()
 #ifdef HAS_DX
   g_windowManager.Add(new CGUIWindowTestPatternDX);      // window id = 8
 #endif
-  g_windowManager.Add(new CGUIDialogTeletext);               // window id =
   g_windowManager.Add(new CGUIWindowSettingsScreenCalibration); // window id = 11
   g_windowManager.Add(new CGUIWindowSettingsCategory);         // window id = 12 slideshow:window id 2007
   g_windowManager.Add(new CGUIWindowVideoNav);                 // window id = 36
@@ -3534,11 +3531,6 @@ bool CApplication::PlayStack(const CFileItem& item, bool bRestart)
     else
     {
       int duration;
-      if (!CDVDFileInfo::GetFileDuration((*m_currentStack)[i]->GetPath(), duration))
-      {
-        m_currentStack->Clear();
-        return false;
-      }
       totalTime += duration / 1000;
       (*m_currentStack)[i]->m_lEndOffset = totalTime;
       times.push_back(totalTime);
@@ -3789,11 +3781,8 @@ bool CApplication::PlayFile(const CFileItem& item, bool bRestart)
   // one of the players that allows gapless playback (paplayer, dvdplayer)
   if (m_pPlayer)
   {
-    if ( !(m_eCurrentPlayer == eNewCore && (m_eCurrentPlayer == EPC_DVDPLAYER || m_eCurrentPlayer  == EPC_PAPLAYER)) )
-    {
-      delete m_pPlayer;
-      m_pPlayer = NULL;
-    }
+    delete m_pPlayer;
+    m_pPlayer = NULL;
   }
 
   if (!m_pPlayer)

@@ -84,7 +84,6 @@ bool CMusicInfoTagLoaderMP3::Load(const CStdString& strFileName, CMusicInfoTag& 
     if (id3tag.Read(strFileName))
     {
       id3tag.GetMusicInfoTag(tag);
-      m_replayGainInfo=id3tag.GetReplayGain();
     }
 
     // Check for an APEv2 tag
@@ -130,8 +129,6 @@ bool CMusicInfoTagLoaderMP3::Load(const CStdString& strFileName, CMusicInfoTag& 
         tag.SetPartOfSet(apeTag.GetDiscNum());
       if (apeTag.GetComment().size())
         tag.SetComment(apeTag.GetComment());
-      if (apeTag.GetReplayGain().iHasGainInfo)
-        m_replayGainInfo = apeTag.GetReplayGain();
       if (apeTag.GetRating() > '0')
         tag.SetRating(apeTag.GetRating());
     }
@@ -153,21 +150,6 @@ bool CMusicInfoTagLoaderMP3::ReadSeekAndReplayGainInfo(const CStdString &strFile
 {
   // First check for an APEv2 tag
   CAPEv2Tag apeTag;
-  if (apeTag.ReadTag(strFileName.c_str()))
-  { // found - let's copy over the additional info (if any)
-    if (apeTag.GetReplayGain().iHasGainInfo)
-      m_replayGainInfo = apeTag.GetReplayGain();
-  }
-
-  if (!m_replayGainInfo.iHasGainInfo)
-  { // Nothing found query id3 tag
-    CID3Tag id3tag;
-    if (id3tag.Read(strFileName))
-    {
-      if (id3tag.GetReplayGain().iHasGainInfo)
-        m_replayGainInfo = id3tag.GetReplayGain();
-    }
-  }
 
   // now read the duration
   int duration = ReadDuration(strFileName);
@@ -679,14 +661,6 @@ bool CMusicInfoTagLoaderMP3::ReadLAMETagInfo(BYTE *b)
       }
     }
   }*/
-  return true;
-}
-
-bool CMusicInfoTagLoaderMP3::GetReplayGain(CReplayGain &info) const
-{
-  if (!m_replayGainInfo.iHasGainInfo)
-    return false;
-  info = m_replayGainInfo;
   return true;
 }
 

@@ -90,8 +90,6 @@
 #include "utils/log.h"
 #include "pictures/Picture.h"
 #include "utils/JobManager.h"
-#include "cores/dvdplayer/DVDSubtitles/DVDSubtitleTagSami.h"
-#include "cores/dvdplayer/DVDSubtitles/DVDSubtitleStream.h"
 #include "windowing/WindowingFactory.h"
 #include "video/VideoInfoTag.h"
 
@@ -2389,33 +2387,6 @@ void CUtil::ScanForExternalSubtitles(const CStdString& strMovie, std::vector<CSt
     }
   }
 
-  iSize = vecSubtitles.size();
-  for (int i = 0; i < iSize; i++)
-  {
-    if (URIUtils::GetExtension(vecSubtitles[i]).Equals(".smi"))
-    {
-      //Cache multi-language sami subtitle
-      CDVDSubtitleStream* pStream = new CDVDSubtitleStream();
-      if(pStream->Open(vecSubtitles[i]))
-      {
-        CDVDSubtitleTagSami TagConv;
-        TagConv.LoadHead(pStream);
-        if (TagConv.m_Langclass.size() >= 2)
-        {
-          for (unsigned int k = 0; k < TagConv.m_Langclass.size(); k++)
-          {
-            strDest.Format("special://temp/subtitle.%s.%d.smi", TagConv.m_Langclass[k].Name, i);
-            if (CFile::Cache(vecSubtitles[i], strDest))
-            {
-              CLog::Log(LOGINFO, " cached subtitle %s->%s\n", vecSubtitles[i].c_str(), strDest.c_str());
-              vecSubtitles.push_back(strDest);
-            }
-          }
-        }
-      }
-      delete pStream;
-    }
-  }
   CLog::Log(LOGDEBUG,"%s: END (total time: %i ms)", __FUNCTION__, (int)(XbmcThreads::SystemClockMillis() - startTimer));
 }
 

@@ -1873,24 +1873,12 @@ OUTPUT_FILES="Makefile \
     Makefile.include \
     addons/skin.confluence/media/Makefile \
     xbmc/Makefile \
-    xbmc/cdrip/Makefile \
     xbmc/cores/Makefile \
     xbmc/cores/VideoRenderers/Makefile \
-    xbmc/cores/dvdplayer/Makefile \
     lib/Makefile \
-    lib/libdvd/Makefile \
     xbmc/cores/DllLoader/Makefile \
-    xbmc/cores/dvdplayer/DVDCodecs/Makefile \
-    xbmc/cores/dvdplayer/DVDCodecs/Audio/Makefile \
-    xbmc/cores/dvdplayer/DVDCodecs/Overlay/Makefile \
-    xbmc/cores/dvdplayer/DVDCodecs/Video/Makefile \
-    xbmc/cores/dvdplayer/DVDDemuxers/Makefile \
-    xbmc/cores/dvdplayer/DVDSubtitles/Makefile \
     xbmc/cores/AudioRenderers/Makefile \
-    xbmc/cores/paplayer/Makefile \
     lib/timidity/Makefile \
-    lib/xbadpcm/Makefile \
-    lib/asap/Makefile \
     lib/nosefart/Makefile \
     lib/libsidplay2/Makefile \
     lib/vgmstream/Makefile \
@@ -1902,11 +1890,9 @@ OUTPUT_FILES="Makefile \
     xbmc/guilib/Makefile \
     xbmc/interfaces/Makefile \
     xbmc/network/Makefile \
-    lib/libRTV/Makefile \
     lib/libexif/Makefile \
     lib/libXDAAP/Makefile \
     lib/cmyth/Makefile \
-    lib/libhdhomerun/Makefile \
     lib/libsquish/Makefile \
     lib/libid3tag/Makefile \
     lib/cximage-6.0/Makefile \
@@ -2040,136 +2026,6 @@ else
 fi
 ])
 ])
-
-XB_CONFIG_MODULE([lib/ffmpeg], [
-  if test "$host_vendor" = "apple" ; then
-    ./configure \
-      --extra-cflags="$CFLAGS $FFMPEG_EXTRACFLAGS -w -D_DARWIN_C_SOURCE -Dattribute_deprecated=" \
-      `if test "$use_arch" != "no"; then echo --enable-cross-compile; fi` \
-      `if test "$use_arch" != "no"; then echo --arch=$use_arch; fi`\
-      `if test "$use_cpu" != "no"; then echo --cpu=$use_cpu; fi`\
-      `if test "$use_arch" = "arm"; then echo --enable-pic; fi`\
-      `if test "$use_neon" = "yes"; then echo --enable-neon; else echo --disable-neon; fi`\
-      --target-os=$(tolower $(uname -s)) \
-      --disable-amd3dnow \
-      --disable-armv5te \
-      --disable-armv6t2 \
-      --disable-static \
-      `if test "$use_debug" = "no"; then echo --disable-debug; fi` \
-      --disable-muxers \
-      --enable-muxer=spdif \
-      --enable-muxer=adts \
-      --disable-encoders \
-      --enable-encoder=ac3 \
-      --enable-encoder=aac \
-      `if test "$use_ffmpeg_libvorbis" = "yes"; then echo --enable-libvorbis --enable-muxer=ogg --enable-encoder=libvorbis; else echo --disable-libvorbis; fi` \
-      --disable-devices \
-      --disable-ffprobe \
-      --disable-ffplay \
-      --disable-ffserver \
-      --disable-ffmpeg \
-      --enable-shared \
-      --disable-doc \
-      --disable-decoder=mpeg_xvmc \
-      --enable-postproc \
-      --enable-gpl \
-      --enable-protocol=http \
-      --enable-pthreads \
-      --enable-runtime-cpudetect \
-      --cc="$CC" &&
-    sed -ie "s#YASM=yasm#YASM=${prefix}/bin/yasm#" config.mak &&
-    sed -ie "s#YASMDEP=yasm#YASMDEP=${prefix}/bin/yasm#" config.mak &&
-    sed -ie "s# -D_ISOC99_SOURCE -D_POSIX_C_SOURCE=200112 # #" config.mak
-    if test "$use_arch" = "ppc"; then
-      sed -ie "s/HAVE_GNU_AS 1/HAVE_GNU_AS 0/" config.h
-      sed -ie "s/^HAVE_GNU_AS=yes/!HAVE_GNU_AS=yes/" config.mak
-    fi
-  else
-    CFLAGS="" \
-    LDFLAGS="$(echo "$LDFLAGS" | sed "s/-Wl,-Bsymbolic-functions//g")" \
-    ./configure \
-      --extra-cflags="$PASSED_CFLAGS $FFMPEG_EXTRACFLAGS" \
-      --disable-static \
-      `if test "$use_debug" = "no"; then echo --disable-debug; fi` \
-      `if test "$cross_compiling" = "yes"; then echo --enable-cross-compile; fi` \
-      `if test "$use_arch" != "no"; then echo --arch=$use_arch; fi`\
-      `if test "$use_cpu" != "no"; then echo --cpu=$use_cpu; fi`\
-      `if test "$use_neon" = "yes"; then echo --enable-neon; else echo --disable-neon; fi`\
-      --target-os=$(tolower $(uname -s)) \
-      --disable-muxers \
-      --enable-muxer=spdif \
-      --enable-muxer=adts \
-      --disable-encoders \
-      --enable-encoder=ac3 \
-      --enable-encoder=aac \
-      `if test "$use_ffmpeg_libvorbis" = "yes"; then echo --enable-libvorbis --enable-muxer=ogg --enable-encoder=libvorbis; else echo --disable-libvorbis; fi` \
-      --disable-decoder=mpeg_xvmc \
-      --disable-devices \
-      --disable-ffprobe \
-      --disable-ffplay \
-      --disable-ffserver \
-      --disable-ffmpeg \
-      --enable-shared \
-      --disable-doc \
-      --enable-postproc \
-      --enable-gpl \
-      `if test "x$use_vdpau" != "xno"; then echo --enable-vdpau; else echo --disable-vdpau; fi` \
-      `if test "x$use_vaapi" != "xno"; then echo --enable-vaapi; else echo --disable-vaapi; fi` \
-      --enable-protocol=http \
-      --enable-pthreads \
-      --enable-runtime-cpudetect \
-      --custom-libname-with-major="\$(FULLNAME)-\$(LIBMAJOR)-${ARCH}\$(SLIBSUF)" \
-      `case $host_cpu in i?86*) echo --disable-pic ;; *) echo --enable-pic ;; esac` \
-      --cc="$CC" &&
-      sed -i -e "s#define HAVE_SYMVER 1#define HAVE_SYMVER 0#" config.h &&
-      sed -i -e "s#define HAVE_SYMVER_GNU_ASM 1#define HAVE_SYMVER_GNU_ASM 0#" config.h
-  fi
-], [$USE_EXTERNAL_FFMPEG])
-
-XB_CONFIG_MODULE([lib/libdvd/libdvdcss], [
-  ./configure \
-    CC="$CC" \
-    CXX="$CXX" \
-    CFLAGS="$CFLAGS" \
-    --prefix="${prefix}" --includedir="${includedir}" --libdir="${libdir}" --datadir="${datadir}" \
-    --host=$host_alias \
-    --build=$build_alias \
-    --target=$target_alias \      
-    --disable-doc \
-    --enable-static \
-    --with-pic
-], [$SKIP_CONFIG_DVDCSS])
-
-XB_CONFIG_MODULE([lib/libdvd/libdvdread], [
-  ./configure2 \
-    --extra-cflags="$CFLAGS $DVDREAD_CFLAGS -I`pwd`/../libdvdcss/src" \
-    --prefix="${prefix}" --includedir="${includedir}" --libdir="${libdir}" --datadir="${datadir}" \
-    --host=$host_alias \
-    --build=$build_alias \
-    --target=$target_alias \      
-    --enable-static \
-    --disable-shared \
-    --disable-strip \
-    --disable-opts \
-    --cc="$CC" &&
-  $MAKE dvdread-config &&
-  mkdir -p `pwd`/../includes/dvdread
-  cp `pwd`/../libdvdread/src/*.h `pwd`/../includes/dvdread
-], [0])
-
-XB_CONFIG_MODULE([lib/libdvd/libdvdnav], [
-  ./configure2 \
-    --extra-cflags="$CFLAGS $DVDREAD_CFLAGS -I`pwd`/../includes" \
-    --extra-ldflags="-L`pwd`/../libdvdread/obj" \
-    --with-dvdread-config="`pwd`/../libdvdread/obj/dvdread-config" \
-    --prefix="${prefix}" --includedir="${includedir}" --libdir="${libdir}" --datadir="${datadir}" \
-    --host=$host_alias \
-    --build=$build_alias \
-    --target=$target_alias \      
-    --enable-static \
-    --disable-shared \
-    --cc="$CC"
-], [0])
 
 XB_CONFIG_MODULE([lib/libid3tag/libid3tag],[
   ./configure \

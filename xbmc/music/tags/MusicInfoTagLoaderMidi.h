@@ -21,7 +21,6 @@
  */
 
 #include "ImusicInfoTagLoader.h"
-#include "cores/paplayer/TimidityCodec.h"
 
 namespace MUSIC_INFO
 {

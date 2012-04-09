@@ -27,11 +27,6 @@
 
 #include <vector>
 
-class CDVDOverlay;
-class CDVDOverlayImage;
-class CDVDOverlaySpu;
-class CDVDOverlaySSA;
-
 namespace OVERLAY {
 
   struct SRenderState
@@ -93,7 +88,6 @@ namespace OVERLAY {
      CRenderer();
     ~CRenderer();
 
-    void AddOverlay(CDVDOverlay* o, double pts);
     void AddOverlay(COverlay*    o, double pts);
     void AddCleanup(COverlay*    o);
     void Flip();
@@ -106,11 +100,9 @@ namespace OVERLAY {
     {
       SElement()
       {
-        overlay_dvd = NULL;
         overlay     = NULL;
       }
       double pts;
-      CDVDOverlay* overlay_dvd;
       COverlay*    overlay;
     };
 
@@ -118,7 +110,6 @@ namespace OVERLAY {
     typedef std::vector<SElement>   SElementV;
 
     void      Render(COverlay* o);
-    COverlay* Convert(CDVDOverlay* o, double pts);
 
     void      Release(COverlayV& list);
     void      Release(SElementV& list);

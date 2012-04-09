@@ -30,7 +30,6 @@
 #include "SIDFileDirectory.h"
 #include "ASAPFileDirectory.h"
 #include "RSSDirectory.h"
-#include "cores/paplayer/ASAPCodec.h"
 #endif
 #ifdef HAS_FILESYSTEM_RAR
 #include "RarDirectory.h"

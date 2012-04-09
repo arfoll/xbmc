@@ -29,16 +29,16 @@
 /*****************
  * All platforms
  *****************/
-#define HAS_DVD_SWSCALE
-#define HAS_DVDPLAYER
+//#define HAS_DVD_SWSCALE
+//#define HAS_DVDPLAYER
 #define HAS_EVENT_SERVER
-#define HAS_KARAOKE
+//#define HAS_KARAOKE
 #define HAS_SCREENSAVER
 #define HAS_PYTHON
 #define HAS_SYSINFO
 #define HAS_UPNP
 #define HAS_VIDEO_PLAYBACK
-#define HAS_VISUALISATION
+//#define HAS_VISUALISATION
 
 #ifdef HAVE_LIBMICROHTTPD
 #define HAS_WEB_SERVER

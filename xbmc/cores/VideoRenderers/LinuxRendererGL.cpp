@@ -39,7 +39,6 @@
 #include "guilib/Texture.h"
 #include "guilib/LocalizeStrings.h"
 #include "threads/SingleLock.h"
-#include "DllSwScale.h"
 #include "utils/log.h"
 #include "utils/GLUtils.h"
 #include "RenderCapture.h"
@@ -158,8 +157,6 @@ CLinuxRendererGL::CLinuxRendererGL()
   m_rgbBufferSize = 0;
   m_context = NULL;
   m_rgbPbo = 0;
-
-  m_dllSwScale = new DllSwScale;
 }
 
 CLinuxRendererGL::~CLinuxRendererGL()
@@ -180,20 +177,12 @@ CLinuxRendererGL::~CLinuxRendererGL()
     m_rgbBuffer = NULL;
   }
 
-  if (m_context)
-  {
-    m_dllSwScale->sws_freeContext(m_context);
-    m_context = NULL;
-  }
-
   if (m_pYUVShader)
   {
     m_pYUVShader->Free();
     delete m_pYUVShader;
     m_pYUVShader = NULL;
   }
-
-  delete m_dllSwScale;
 }
 
 bool CLinuxRendererGL::ValidateRenderer()
@@ -742,9 +731,6 @@ unsigned int CLinuxRendererGL::PreInit()
   // setup the background colour
   m_clearColour = (float)(g_advancedSettings.m_videoBlackBarColour & 0xff) / 0xff;
 
-  if (!m_dllSwScale->Load())
-    CLog::Log(LOGERROR,"CLinuxRendererGL::PreInit - failed to load rescale libraries!");
-
   return true;
 }
 
@@ -1064,12 +1050,6 @@ void CLinuxRendererGL::UnInit()
     m_rgbBuffer = NULL;
   }
   m_rgbBufferSize = 0;
-
-  if (m_context)
-  {
-    m_dllSwScale->sws_freeContext(m_context);
-    m_context = NULL;
-  }
 
   // YV12 textures
   for (int i = 0; i < NUM_BUFFERS; ++i)
@@ -2598,155 +2578,12 @@ bool CLinuxRendererGL::CreateYUV422PackedTexture(int index)
 
 void CLinuxRendererGL::ToRGBFrame(YV12Image* im, unsigned flipIndexPlane, unsigned flipIndexBuf)
 {
-  if(m_rgbBufferSize != m_sourceWidth * m_sourceHeight * 4)
-    SetupRGBBuffer();
-  else if(flipIndexPlane == flipIndexBuf)
-    return; //conversion already done on the previous iteration
-
-  uint8_t *src[4]       = {};
-  int      srcStride[4] = {};
-  int      srcFormat    = -1;
-
-  if (CONF_FLAGS_FORMAT_MASK(m_iFlags) == CONF_FLAGS_FORMAT_YV12)
-  {
-    srcFormat = PIX_FMT_YUV420P;
-    for (int i = 0; i < 3; i++)
-    {
-      src[i]       = im->plane[i];
-      srcStride[i] = im->stride[i];
-    }
-  }
-  else if (CONF_FLAGS_FORMAT_MASK(m_iFlags) == CONF_FLAGS_FORMAT_NV12)
-  {
-    srcFormat = PIX_FMT_NV12;
-    for (int i = 0; i < 2; i++)
-    {
-      src[i]       = im->plane[i];
-      srcStride[i] = im->stride[i];
-    }
-  }
-  else if (CONF_FLAGS_FORMAT_MASK(m_iFlags) == CONF_FLAGS_FORMAT_YUY2)
-  {
-    srcFormat    = PIX_FMT_YUYV422;
-    src[0]       = im->plane[0];
-    srcStride[0] = im->stride[0];
-  }
-  else if (CONF_FLAGS_FORMAT_MASK(m_iFlags) == CONF_FLAGS_FORMAT_UYVY)
-  {
-    srcFormat    = PIX_FMT_UYVY422;
-    src[0]       = im->plane[0];
-    srcStride[0] = im->stride[0];
-  }
-  else //should never happen
-  {
-    CLog::Log(LOGERROR, "CLinuxRendererGL::ToRGBFrame: called with unsupported format %i", CONF_FLAGS_FORMAT_MASK(m_iFlags));
-    return;
-  }
-
-  if (m_rgbPbo)
-  {
-    glBindBufferARB(GL_PIXEL_UNPACK_BUFFER_ARB, m_rgbPbo);
-    m_rgbBuffer = (BYTE*)glMapBufferARB(GL_PIXEL_UNPACK_BUFFER_ARB, GL_WRITE_ONLY_ARB) + PBO_OFFSET;
-  }
-
-  m_context = m_dllSwScale->sws_getCachedContext(m_context,
-                                                 im->width, im->height, srcFormat,
-                                                 im->width, im->height, PIX_FMT_BGRA,
-                                                 SWS_FAST_BILINEAR | SwScaleCPUFlags(), NULL, NULL, NULL);
-  uint8_t *dst[]       = { m_rgbBuffer, 0, 0, 0 };
-  int      dstStride[] = { m_sourceWidth * 4, 0, 0, 0 };
-  m_dllSwScale->sws_scale(m_context, src, srcStride, 0, im->height, dst, dstStride);
-
-  if (m_rgbPbo)
-  {
-    glUnmapBufferARB(GL_PIXEL_UNPACK_BUFFER_ARB);
-    glBindBufferARB(GL_PIXEL_UNPACK_BUFFER_ARB, 0);
-    m_rgbBuffer = (BYTE*)PBO_OFFSET;
-  }
+  return;
 }
 
 void CLinuxRendererGL::ToRGBFields(YV12Image* im, unsigned flipIndexPlaneTop, unsigned flipIndexPlaneBot, unsigned flipIndexBuf)
 {
-  if(m_rgbBufferSize != m_sourceWidth * m_sourceHeight * 4)
-    SetupRGBBuffer();
-  else if(flipIndexPlaneTop == flipIndexBuf && flipIndexPlaneBot == flipIndexBuf)
-    return; //conversion already done on the previous iteration
-
-  uint8_t *srcTop[4]       = {};
-  int      srcStrideTop[4] = {};
-  uint8_t *srcBot[4]       = {};
-  int      srcStrideBot[4] = {};
-  int      srcFormat       = -1;
-
-  if (CONF_FLAGS_FORMAT_MASK(m_iFlags) == CONF_FLAGS_FORMAT_YV12)
-  {
-    srcFormat = PIX_FMT_YUV420P;
-    for (int i = 0; i < 3; i++)
-    {
-      srcTop[i]       = im->plane[i];
-      srcStrideTop[i] = im->stride[i] * 2;
-      srcBot[i]       = im->plane[i] + im->stride[i];
-      srcStrideBot[i] = im->stride[i] * 2;
-    }
-  }
-  else if (CONF_FLAGS_FORMAT_MASK(m_iFlags) == CONF_FLAGS_FORMAT_NV12)
-  {
-    srcFormat = PIX_FMT_NV12;
-    for (int i = 0; i < 2; i++)
-    {
-      srcTop[i]       = im->plane[i];
-      srcStrideTop[i] = im->stride[i] * 2;
-      srcBot[i]       = im->plane[i] + im->stride[i];
-      srcStrideBot[i] = im->stride[i] * 2;
-    }
-  }
-  else if (CONF_FLAGS_FORMAT_MASK(m_iFlags) == CONF_FLAGS_FORMAT_YUY2)
-  {
-    srcFormat       = PIX_FMT_YUYV422;
-    srcTop[0]       = im->plane[0];
-    srcStrideTop[0] = im->stride[0] * 2;
-    srcBot[0]       = im->plane[0] + im->stride[0];
-    srcStrideBot[0] = im->stride[0] * 2;
-  }
-  else if (CONF_FLAGS_FORMAT_MASK(m_iFlags) == CONF_FLAGS_FORMAT_UYVY)
-  {
-    srcFormat       = PIX_FMT_UYVY422;
-    srcTop[0]       = im->plane[0];
-    srcStrideTop[0] = im->stride[0] * 2;
-    srcBot[0]       = im->plane[0] + im->stride[0];
-    srcStrideBot[0] = im->stride[0] * 2;
-  }
-  else //should never happen
-  {
-    CLog::Log(LOGERROR, "CLinuxRendererGL::ToRGBFields: called with unsupported format %i", CONF_FLAGS_FORMAT_MASK(m_iFlags));
-    return;
-  }
-
-  if (m_rgbPbo)
-  {
-    glBindBufferARB(GL_PIXEL_UNPACK_BUFFER_ARB, m_rgbPbo);
-    m_rgbBuffer = (BYTE*)glMapBufferARB(GL_PIXEL_UNPACK_BUFFER_ARB, GL_WRITE_ONLY_ARB) + PBO_OFFSET;
-  }
-
-  m_context = m_dllSwScale->sws_getCachedContext(m_context,
-                                                 im->width, im->height >> 1, srcFormat,
-                                                 im->width, im->height >> 1, PIX_FMT_BGRA,
-                                                 SWS_FAST_BILINEAR | SwScaleCPUFlags(), NULL, NULL, NULL);
-  uint8_t *dstTop[]    = { m_rgbBuffer, 0, 0, 0 };
-  uint8_t *dstBot[]    = { m_rgbBuffer + m_sourceWidth * m_sourceHeight * 2, 0, 0, 0 };
-  int      dstStride[] = { m_sourceWidth * 4, 0, 0, 0 };
-
-  //convert each YUV field to an RGB field, the top field is placed at the top of the rgb buffer
-  //the bottom field is placed at the bottom of the rgb buffer
-  m_dllSwScale->sws_scale(m_context, srcTop, srcStrideTop, 0, im->height >> 1, dstTop, dstStride);
-  m_dllSwScale->sws_scale(m_context, srcBot, srcStrideBot, 0, im->height >> 1, dstBot, dstStride);
-
-  if (m_rgbPbo)
-  {
-    glUnmapBufferARB(GL_PIXEL_UNPACK_BUFFER_ARB);
-    glBindBufferARB(GL_PIXEL_UNPACK_BUFFER_ARB, 0);
-    m_rgbBuffer = (BYTE*)PBO_OFFSET;
-  }
+  return;
 }
 
 void CLinuxRendererGL::SetupRGBBuffer()

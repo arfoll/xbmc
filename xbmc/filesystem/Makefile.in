@@ -29,7 +29,6 @@ SRCS=AddonsDirectory.cpp \
      FileLastFM.cpp \
      FileMusicDatabase.cpp \
      FilePipe.cpp \
-     FileRTV.cpp \
      FileShoutcast.cpp \
      FileSFTP.cpp \
      FileSpecialProtocol.cpp \
@@ -40,7 +39,6 @@ SRCS=AddonsDirectory.cpp \
      FTPDirectory.cpp \
      FTPParse.cpp \
      HDDirectory.cpp \
-     HDHomeRun.cpp \
      HTSPDirectory.cpp \
      HTSPSession.cpp \
      HTTPDirectory.cpp \
@@ -65,12 +63,10 @@ SRCS=AddonsDirectory.cpp \
      PipesManager.cpp \
      PluginDirectory.cpp \
      RSSDirectory.cpp \
-     RTVDirectory.cpp \
      SAPDirectory.cpp \
      SAPFile.cpp \
      SFTPDirectory.cpp \
      SIDFileDirectory.cpp \
-     Slingbox.cpp \
      SmartPlaylistDirectory.cpp \
      SourcesDirectory.cpp \
      SpecialProtocol.cpp \

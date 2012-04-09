@@ -29,7 +29,6 @@
 #include "guilib/D3DResource.h"
 #include "RenderCapture.h"
 #include "settings/VideoSettings.h"
-#include "cores/dvdplayer/DVDCodecs/Video/DXVA.h"
 #include "cores/VideoRenderers/RenderFlags.h"
 
 //#define MP_DIRECTRENDERING

@@ -128,58 +128,6 @@ bool CAPEv2Tag::ReadTag(const char* filename)
         m_rating = temp;
   }
 
-  // Replay gain info
-  GetReplayGainFromTag(tag);
-
   m_dll.apetag_free(tag);
   return true;
-}
-
-void CAPEv2Tag::GetReplayGainFromTag(apetag *tag)
-{
-  if (!tag) return;
-
-  //  foobar2000 saves gain info as lowercase key items
-  if (apefrm_getstr(tag, (char*)"replaygain_track_gain"))
-  {
-    m_replayGain.iTrackGain = (int)(atof(apefrm_getstr(tag, (char*)"replaygain_track_gain"))*100 + 0.5);
-    m_replayGain.iHasGainInfo |= REPLAY_GAIN_HAS_TRACK_INFO;
-  }
-  if (apefrm_getstr(tag, (char*)"replaygain_track_peak"))
-  {
-    m_replayGain.fTrackPeak = (float)atof(apefrm_getstr(tag, (char*)"replaygain_track_peak"));
-    m_replayGain.iHasGainInfo |= REPLAY_GAIN_HAS_TRACK_PEAK;
-  }
-  if (apefrm_getstr(tag, (char*)"replaygain_album_gain"))
-  {
-    m_replayGain.iAlbumGain = (int)(atof(apefrm_getstr(tag, (char*)"replaygain_album_gain"))*100 + 0.5);
-    m_replayGain.iHasGainInfo |= REPLAY_GAIN_HAS_ALBUM_INFO;
-  }
-  if (apefrm_getstr(tag, (char*)"replaygain_album_peak"))
-  {
-    m_replayGain.fAlbumPeak = (float)atof(apefrm_getstr(tag, (char*)"replaygain_album_peak"));
-    m_replayGain.iHasGainInfo |= REPLAY_GAIN_HAS_ALBUM_PEAK;
-  }
-
-  // MP3GAIN saves gain info as uppercase key items
-  if (apefrm_getstr(tag, (char*)"REPLAYGAIN_TRACK_GAIN"))
-  {
-    m_replayGain.iTrackGain = (int)(atof(apefrm_getstr(tag, (char*)"REPLAYGAIN_TRACK_GAIN"))*100 + 0.5);
-    m_replayGain.iHasGainInfo |= REPLAY_GAIN_HAS_TRACK_INFO;
-  }
-  if (apefrm_getstr(tag, (char*)"REPLAYGAIN_TRACK_PEAK"))
-  {
-    m_replayGain.fTrackPeak = (float)atof(apefrm_getstr(tag, (char*)"REPLAYGAIN_TRACK_PEAK"));
-    m_replayGain.iHasGainInfo |= REPLAY_GAIN_HAS_TRACK_PEAK;
-  }
-  if (apefrm_getstr(tag, (char*)"REPLAYGAIN_ALBUM_GAIN"))
-  {
-    m_replayGain.iAlbumGain = (int)(atof(apefrm_getstr(tag, (char*)"REPLAYGAIN_ALBUM_GAIN"))*100 + 0.5);
-    m_replayGain.iHasGainInfo |= REPLAY_GAIN_HAS_ALBUM_INFO;
-  }
-  if (apefrm_getstr(tag, (char*)"REPLAYGAIN_ALBUM_PEAK"))
-  {
-    m_replayGain.fAlbumPeak = (float)atof(apefrm_getstr(tag, (char*)"REPLAYGAIN_ALBUM_PEAK"));
-    m_replayGain.iHasGainInfo |= REPLAY_GAIN_HAS_ALBUM_PEAK;
-  }
 }
