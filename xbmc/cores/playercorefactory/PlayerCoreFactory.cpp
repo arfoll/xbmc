@@ -30,6 +30,7 @@
 #include "settings/AdvancedSettings.h"
 #include "utils/AutoPtrHandle.h"
 #include "cores/ExternalPlayer/ExternalPlayer.h"
+#include "cores/meegoplayer/MeegoPlayer.h"
 #include "PlayerCoreConfig.h"
 #include "PlayerSelectionRule.h"
 #include "guilib/LocalizeStrings.h"
@@ -239,6 +240,10 @@ bool CPlayerCoreFactory::LoadConfiguration(TiXmlElement* pConfig, bool clear)
     paplayer->m_bPlaysAudio = true;
     s_vecCoreConfigs.push_back(paplayer);
 
+    CPlayerCoreConfig* meegoplayer = new CPlayerCoreConfig("meegoplayer", EPC_MEEPLAYER, NULL);
+    meegoplayer->m_bPlaysAudio = meegoplayer->m_bPlaysVideo = true;
+    s_vecCoreConfigs.push_back(meegoplayer);
+
     for(std::vector<CPlayerSelectionRule *>::iterator it = s_vecCoreSelectionRules.begin(); it != s_vecCoreSelectionRules.end(); it++)
       delete *it;
     s_vecCoreSelectionRules.clear();
@@ -262,8 +267,7 @@ bool CPlayerCoreFactory::LoadConfiguration(TiXmlElement* pConfig, bool clear)
       type.ToLower();
 
       EPLAYERCORES eCore = EPC_NONE;
-      if (type == "dvdplayer" || type == "mplayer") eCore = EPC_DVDPLAYER;
-      if (type == "paplayer" ) eCore = EPC_PAPLAYER;
+      if (type == "meegoplayer" ) eCore = EPC_MEEPLAYER;
       if (type == "externalplayer" ) eCore = EPC_EXTPLAYER;
 
       if (eCore != EPC_NONE)

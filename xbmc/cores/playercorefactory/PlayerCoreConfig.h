@@ -23,6 +23,7 @@
 #include "tinyXML/tinyxml.h"
 #include "cores/IPlayer.h"
 #include "PlayerCoreFactory.h"
+#include "cores/meegoplayer/MeegoPlayer.h"
 #include "cores/ExternalPlayer/ExternalPlayer.h"
 #include "utils/log.h"
 
@@ -70,6 +71,7 @@ public:
     {
       case EPC_MPLAYER:
       case EPC_EXTPLAYER: pPlayer = new CExternalPlayer(callback); break;
+      case EPC_MEEPLAYER: pPlayer = new CMeegoPlayer(callback); break;
       default: return NULL;
     }
 
