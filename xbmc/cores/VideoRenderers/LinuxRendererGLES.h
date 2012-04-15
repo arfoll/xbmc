@@ -30,7 +30,6 @@
 #include "RenderFlags.h"
 #include "guilib/GraphicContext.h"
 #include "BaseRenderer.h"
-#include "xbmc/cores/dvdplayer/DVDCodecs/Video/DVDVideoCodec.h"
 
 class CRenderCapture;
 
@@ -117,7 +116,6 @@ extern YUVCOEF yuv_coef_bt709;
 extern YUVCOEF yuv_coef_ebu;
 extern YUVCOEF yuv_coef_smtp240m;
 
-class DllSwScale;
 struct SwsContext;
 
 class CEvent;
@@ -270,7 +268,6 @@ protected:
   float m_clearColour;
 
   // software scale libraries (fallback if required gl version is not available)
-  DllSwScale  *m_dllSwScale;
   struct SwsContext *m_sw_context;
   BYTE	      *m_rgbBuffer;  // if software scale is used, this will hold the result image
   unsigned int m_rgbBufferSize;

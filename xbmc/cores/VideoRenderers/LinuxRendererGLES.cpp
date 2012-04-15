@@ -28,6 +28,7 @@
 #include <locale.h>
 #include "guilib/MatrixGLES.h"
 #include "LinuxRendererGLES.h"
+#include "utils/log.h"
 #include "utils/fastmemcpy.h"
 #include "utils/MathUtils.h"
 #include "utils/GLUtils.h"
@@ -40,7 +41,6 @@
 #include "windowing/WindowingFactory.h"
 #include "dialogs/GUIDialogKaiToast.h"
 #include "guilib/Texture.h"
-#include "../dvdplayer/DVDCodecs/Video/OpenMaxVideo.h"
 #include "threads/SingleLock.h"
 #include "RenderCapture.h"
 #if defined(__ARM_NEON__)
@@ -102,7 +102,6 @@ CLinuxRendererGLES::CLinuxRendererGLES()
   m_rgbBuffer = NULL;
   m_rgbBufferSize = 0;
 
-  m_dllSwScale = new DllSwScale;
   m_sw_context = NULL;
 }
 
@@ -123,8 +122,6 @@ CLinuxRendererGLES::~CLinuxRendererGLES()
     delete m_pYUVShader;
     m_pYUVShader = NULL;
   }
-
-  delete m_dllSwScale;
 }
 
 void CLinuxRendererGLES::ManageTextures()
@@ -512,9 +509,6 @@ unsigned int CLinuxRendererGLES::PreInit()
   // setup the background colour
   m_clearColour = (float)(g_advancedSettings.m_videoBlackBarColour & 0xff) / 0xff;
 
-  if (!m_dllSwScale->Load())
-    CLog::Log(LOGERROR,"CLinuxRendererGL::PreInit - failed to load rescale libraries!");
-
   return true;
 }
 
@@ -601,54 +595,9 @@ void CLinuxRendererGLES::LoadShaders(int field)
   {
     case RENDER_METHOD_AUTO:
     case RENDER_METHOD_GLSL:
-      if (CONF_FLAGS_FORMAT_MASK(m_iFlags) == CONF_FLAGS_FORMAT_OMXEGL)
-      {
-        CLog::Log(LOGNOTICE, "GL: Using OMXEGL RGBA render method");
-        m_renderMethod = RENDER_OMXEGL;
-        break;
-      }
-      else if (CONF_FLAGS_FORMAT_MASK(m_iFlags) == CONF_FLAGS_FORMAT_BYPASS)
-      {
-        CLog::Log(LOGNOTICE, "GL: Using BYPASS render method");
-        m_renderMethod = RENDER_BYPASS;
-        break;
-      }
-      else if (CONF_FLAGS_FORMAT_MASK(m_iFlags) == CONF_FLAGS_FORMAT_CVBREF)
-      {
-        CLog::Log(LOGNOTICE, "GL: Using CoreVideoRef RGBA render method");
-        m_renderMethod = RENDER_CVREF;
-        break;
-      }
-      #if defined(TARGET_DARWIN_IOS)
-      else if (ios_version < 5.0 && CONF_FLAGS_FORMAT_MASK(m_iFlags) == CONF_FLAGS_FORMAT_YV12)
-      {
-        CLog::Log(LOGNOTICE, "GL: Using software color conversion/RGBA render method");
-        m_renderMethod = RENDER_SW;
-        break;
-      }
-      #endif
-      // Try GLSL shaders if supported and user requested auto or GLSL.
-      if (glCreateProgram)
-      {
-        // create regular progressive scan shader
-        m_pYUVShader = new YUV2RGBProgressiveShader(false, m_iFlags);
-        CLog::Log(LOGNOTICE, "GL: Selecting Single Pass YUV 2 RGB shader");
-
-        if (m_pYUVShader && m_pYUVShader->CompileAndLink())
-        {
-          m_renderMethod = RENDER_GLSL;
-          UpdateVideoFilter();
-          break;
-        }
-        else
-        {
-          m_pYUVShader->Free();
-          delete m_pYUVShader;
-          m_pYUVShader = NULL;
-          CLog::Log(LOGERROR, "GL: Error enabling YUV2RGB GLSL shader");
-          // drop through and try SW
-        }
-      }
+      CLog::Log(LOGNOTICE, "GL: Using BYPASS render method");
+      m_renderMethod = RENDER_BYPASS;
+      break;
     case RENDER_METHOD_SOFTWARE:
     default:
       {
@@ -706,11 +655,6 @@ void CLinuxRendererGLES::UnInit()
   for (int i = 0; i < NUM_BUFFERS; ++i)
     (this->*m_textureDelete)(i);
 
-  if (m_dllSwScale && m_sw_context)
-  {
-    m_dllSwScale->sws_freeContext(m_sw_context);
-    m_sw_context = NULL;
-  }
   // cleanup framebuffer object if it was in use
   m_fbo.Cleanup();
   m_bValidated = false;
@@ -1323,33 +1267,6 @@ void CLinuxRendererGLES::UploadYV12Texture(int source)
   {
     m_eventTexturesDone[source]->Set();
     return;
-  }
-
-  // if we don't have a shader, fallback to SW YUV2RGB for now
-  if (m_renderMethod & RENDER_SW)
-  {
-    if(m_rgbBufferSize < m_sourceWidth * m_sourceHeight * 4)
-    {
-      delete [] m_rgbBuffer;
-      m_rgbBufferSize = m_sourceWidth*m_sourceHeight*4;
-      m_rgbBuffer = new BYTE[m_rgbBufferSize];
-    }
-
-#if defined(__ARM_NEON__)
-    yuv420_2_rgb8888_neon(m_rgbBuffer, im->plane[0], im->plane[2], im->plane[1],
-      m_sourceWidth, m_sourceHeight, im->stride[0], im->stride[1], m_sourceWidth * 4);
-#else
-    m_sw_context = m_dllSwScale->sws_getCachedContext(m_sw_context,
-      im->width, im->height, PIX_FMT_YUV420P,
-      im->width, im->height, PIX_FMT_RGBA,
-      SWS_FAST_BILINEAR, NULL, NULL, NULL);
-
-    uint8_t *src[]  = { im->plane[0], im->plane[1], im->plane[2], 0 };
-    int srcStride[] = { im->stride[0], im->stride[1], im->stride[2], 0 };
-    uint8_t *dst[]  = { m_rgbBuffer, 0, 0, 0 };
-    int dstStride[] = { m_sourceWidth*4, 0, 0, 0 };
-    m_dllSwScale->sws_scale(m_sw_context, src, srcStride, 0, im->height, dst, dstStride);
-#endif
   }
 
   bool deinterlacing;
