@@ -262,7 +262,7 @@ void CAdvancedSettings::Initialize()
   m_ForcedSwapTime = 0.0;
 //#endif
 
-  m_cpuTempCmd = "";
+  m_cpuTempCmd = "/bin/thermal -r | cut -d ' ' -f 5";
   m_gpuTempCmd = "";
 #ifdef __APPLE__
   // default for osx is fullscreen always on top
@@ -283,10 +283,10 @@ void CAdvancedSettings::Initialize()
 
   m_enableMultimediaKeys = false;
 
-  m_canWindowed = true;
+  m_canWindowed = false;
   m_guiVisualizeDirtyRegions = false;
-  m_guiAlgorithmDirtyRegions = 0;
-  m_guiDirtyRegionNoFlipTimeout = -1;
+  m_guiAlgorithmDirtyRegions = 1;
+  m_guiDirtyRegionNoFlipTimeout = 1000;
   m_logEnableAirtunes = false;
   m_airTunesPort = 36666;
   m_airPlayPort = 36667;

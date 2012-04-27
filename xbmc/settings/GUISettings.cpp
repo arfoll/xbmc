@@ -280,6 +280,7 @@ void CGUISettings::Initialize()
   CSettingsCategory* mp = AddCategory(3, "musicplayer", 14086);
   AddBool(mp, "musicplayer.autoplaynextitem", 489, true);
   AddBool(mp, "musicplayer.queuebydefault", 14084, false);
+#if 0
   AddSeparator(mp, "musicplayer.sep1");
   map<int,int> gain;
   gain.insert(make_pair(351,REPLAY_GAIN_NONE));
@@ -294,6 +295,7 @@ void CGUISettings::Initialize()
   AddBool(mp, "musicplayer.crossfadealbumtracks", 13400, true);
   AddSeparator(mp, "musicplayer.sep3");
   AddDefaultAddon(mp, "musicplayer.visualisation", 250, DEFAULT_VISUALISATION, ADDON_VIZ);
+#endif
 
   CSettingsCategory* mf = AddCategory(3, "musicfiles", 14081);
   AddBool(mf, "musicfiles.usetags", 258, true);
@@ -319,6 +321,7 @@ void CGUISettings::Initialize()
   CSettingsCategory* acd = AddCategory(3, "audiocds", 620);
   AddBool(acd, "audiocds.autorun", 14085, false);
   AddBool(acd, "audiocds.usecddb", 227, true);
+#if 0
   AddSeparator(acd, "audiocds.sep1");
   AddPath(acd,"audiocds.recordingpath",20000,"select writable folder",BUTTON_CONTROL_PATH_INPUT,false,657);
   AddString(acd, "audiocds.trackpathformat", 13307, "%A - %B/[%N. ][%A - ]%T", EDIT_CONTROL_INPUT, false, 16016);
@@ -337,6 +340,7 @@ void CGUISettings::Initialize()
   AddInt(acd, "audiocds.quality", 622, CDDARIP_QUALITY_CBR, qualities, SPIN_CONTROL_TEXT);
   AddInt(acd, "audiocds.bitrate", 623, 192, 128, 32, 320, SPIN_CONTROL_INT_PLUS, MASK_KBPS);
   AddInt(acd, "audiocds.compressionlevel", 665, 5, 0, 1, 8, SPIN_CONTROL_INT_PLUS);
+#endif
 
 #ifdef HAS_KARAOKE
   CSettingsCategory* kar = AddCategory(3, "karaoke", 13327);
@@ -424,6 +428,7 @@ void CGUISettings::Initialize()
   AddBool(vs, "videoscreen.haslcd", 4501, false);
 #endif
 
+#if 0
   CSettingsCategory* ao = AddCategory(4, "audiooutput", 772);
 
   map<int,int> audiomode;
@@ -463,6 +468,7 @@ void CGUISettings::Initialize()
 #elif defined(_WIN32)
   AddString(ao, "audiooutput.audiodevice", 545, "Default", SPIN_CONTROL_TEXT);
 #endif
+#endif
 
   CSettingsCategory* in = AddCategory(4, "input", 14094);
   AddString(in, "input.peripherals", 35000, "", BUTTON_CONTROL_STANDARD);
@@ -485,7 +491,7 @@ void CGUISettings::Initialize()
 #if defined(TARGET_DARWIN_IOS)
   AddBool(NULL, "input.enablemouse", 21369, true);
 #else
-  AddBool(in, "input.enablemouse", 21369, true);
+  AddBool(in, "input.enablemouse", 21369, false);
 #endif
 
   CSettingsCategory* pwm = AddCategory(4, "powermanagement", 14095);
@@ -541,6 +547,7 @@ void CGUISettings::Initialize()
 
   // video settings
   AddGroup(5, 3);
+#if 0
   CSettingsCategory* vdl = AddCategory(5, "videolibrary", 14022);
   AddBool(NULL, "videolibrary.enabled", 418, true);
   AddBool(vdl, "videolibrary.showunwatchedplots", 20369, true);
@@ -657,6 +664,7 @@ void CGUISettings::Initialize()
 #endif
   AddSeparator(vp, "videoplayer.sep5");
   AddBool(vp, "videoplayer.teletextenabled", 23050, true);
+#endif
 
   CSettingsCategory* vid = AddCategory(5, "myvideos", 14081);
 
@@ -672,6 +680,7 @@ void CGUISettings::Initialize()
   AddBool(vid, "myvideos.replacelabels", 20419, true);
   AddBool(NULL, "myvideos.extractthumb",20433, true);
 
+#if 0
   CSettingsCategory* sub = AddCategory(5, "subtitles", 287);
   AddString(sub, "subtitles.font", 14089, "arial.ttf", SPIN_CONTROL_TEXT);
   AddInt(sub, "subtitles.height", 289, 28, 16, 2, 74, SPIN_CONTROL_TEXT); // use text as there is a disk based lookup needed
@@ -706,6 +715,7 @@ void CGUISettings::Initialize()
   AddDefaultAddon(NULL, "scrapers.tvshowsdefault", 21414, "metadata.tvdb.com", ADDON_SCRAPER_TVSHOWS);
   AddDefaultAddon(NULL, "scrapers.musicvideosdefault", 21415, "metadata.yahoomusic.com", ADDON_SCRAPER_MUSICVIDEOS);
   AddBool(NULL, "scrapers.langfallback", 21416, false);
+#endif
 
   // network settings
   AddGroup(6, 705);
@@ -809,12 +819,12 @@ void CGUISettings::Initialize()
   AddInt(laf, "lookandfeel.startupwindow",512,1, WINDOW_HOME, 1, WINDOW_PYTHON_END, SPIN_CONTROL_TEXT);
   AddString(laf, "lookandfeel.soundskin",15108,"SKINDEFAULT", SPIN_CONTROL_TEXT);
   AddSeparator(laf, "lookandfeel.sep2");
-  AddBool(laf, "lookandfeel.enablerssfeeds",13305,  true);
+  AddBool(laf, "lookandfeel.enablerssfeeds",13305,  false);
   AddString(laf, "lookandfeel.rssedit", 21450, "", BUTTON_CONTROL_STANDARD);
 
   CSettingsCategory* loc = AddCategory(7, "locale", 14090);
   AddString(loc, "locale.language",248,"english", SPIN_CONTROL_TEXT);
-  AddString(loc, "locale.country", 20026, "USA", SPIN_CONTROL_TEXT);
+  AddString(loc, "locale.country", 20026, "UK (24hr)", SPIN_CONTROL_TEXT);
   AddString(loc, "locale.charset", 14091, "DEFAULT", SPIN_CONTROL_TEXT); // charset is set by the language file
   
   bool use_timezone = false;
