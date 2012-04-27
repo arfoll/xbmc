@@ -113,6 +113,16 @@ static CLinuxResourceCounter m_resourceCounter;
 
 static color_t color[8] = { 0xFFFFFF00, 0xFFFFFFFF, 0xFF0099FF, 0xFF00FF00, 0xFFCCFF00, 0xFF00FFFF, 0xFFE5E5E5, 0xFFC0C0C0 };
 
+static GLfloat square_vertices[] = {
+   1.0f,  1.0f,
+  -1.0f,  1.0f,
+  -1.0f, -1.0f,
+   1.0f, -1.0f,
+};
+
+static GLuint program;
+static GLint attribute_coord2d;
+
 CGUIWindowFullScreen::CGUIWindowFullScreen(void)
     : CGUIWindow(WINDOW_FULLSCREEN_VIDEO, "VideoFullScreen.xml")
 {
@@ -142,6 +152,60 @@ CGUIWindowFullScreen::CGUIWindowFullScreen(void)
   //  - delay
   //  - language
 
+  init_ressources();
+}
+
+int CGUIWindowFullScreen::init_ressources()
+{
+  GLint compile_ok = GL_FALSE, link_ok = GL_FALSE;
+
+  GLuint vs = glCreateShader(GL_VERTEX_SHADER);
+  const char *vs_source =
+    "#version 100\n"  // OpenGL ES 2.0
+    "attribute vec2 coord2d;                  "
+    "void main(void) {                        "
+    "  gl_Position = vec4(coord2d, 0.0, 1.0); "
+    "}";
+  glShaderSource(vs, 1, &vs_source, NULL);
+  glCompileShader(vs);
+  glGetShaderiv(vs, GL_COMPILE_STATUS, &compile_ok);
+  if (!compile_ok) {
+    fprintf(stderr, "Error in vertex shader\n");
+    return 0;
+  }
+
+  GLuint fs = glCreateShader(GL_FRAGMENT_SHADER);
+  const char *fs_source =
+    "#version 100\n"  // OpenGL ES 2.0
+    "void main(void) {        "
+    "  gl_FragColor = vec4 (1.0, 0.0, 0.0, 0.0); "
+    "}";
+  glShaderSource(fs, 1, &fs_source, NULL);
+  glCompileShader(fs);
+  glGetShaderiv(fs, GL_COMPILE_STATUS, &compile_ok);
+  if (!compile_ok) {
+    fprintf(stderr, "Error in fragment shader\n");
+    return 0;
+  }
+
+  program = glCreateProgram();
+  glAttachShader(program, vs);
+  glAttachShader(program, fs);
+  glLinkProgram(program);
+  glGetProgramiv(program, GL_LINK_STATUS, &link_ok);
+  if (!link_ok) {
+    fprintf(stderr, "glLinkProgram:");
+    return 0;
+  }
+
+  const char* attribute_name = "coord2d";
+  attribute_coord2d = glGetAttribLocation(program, attribute_name);
+  if (attribute_coord2d == -1) {
+    fprintf(stderr, "Could not bind attribute %s\n", attribute_name);
+    return 0;
+  }
+
+  return 1;
 }
 
 CGUIWindowFullScreen::~CGUIWindowFullScreen(void)
@@ -944,10 +1008,43 @@ void CGUIWindowFullScreen::Process(unsigned int currentTime, CDirtyRegionList &d
   m_renderRegion.SetRect(0, 0, (float)g_graphicsContext.GetWidth(), (float)g_graphicsContext.GetHeight());
 }
 
+typedef struct _vertexStruct
+{
+  GLfloat position[2];
+  GLubyte color[4];
+} vertexStruct;
+enum {
+ ATTRIB_POSITION,
+ ATTRIB_COLOR,
+ NUM_ATTRIBUTES };
+
 void CGUIWindowFullScreen::Render()
 {
-  if (g_application.m_pPlayer)
-    RenderTTFSubtitles();
+  glEnable (GL_BLEND);
+  glBlendFunc (GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
+  glClearColor (0.0f, 0.0f, 0.0f, 0.0f);
+  glClear(GL_COLOR_BUFFER_BIT);
+
+  glUseProgram(program);
+  glEnableVertexAttribArray(attribute_coord2d);
+
+  /* Describe our vertices array to OpenGL (it can't guess its format automatically) */
+  glVertexAttribPointer(
+    attribute_coord2d, // attribute
+    2,                 // number of elements per vertex, here (x,y)
+    GL_FLOAT,          // the type of each element
+    GL_FALSE,          // take our values as-is
+    0,                 // no extra data between each position
+    square_vertices    // pointer to the C array
+  );
+
+  /* Push each element in buffer_vertices to the vertex shader */
+  glDrawArrays(GL_TRIANGLE_FAN, 0, 4);
+
+  glDisableVertexAttribArray(attribute_coord2d);
+  glFlush();
+  glDisable( GL_TEXTURE_2D );
+
   CGUIWindow::Render();
 }
 

@@ -174,6 +174,7 @@ bool CWinSystemX11GLES::CreateNewWindow(const CStdString& name, bool fullScreen,
 
   SDL_WM_SetIcon(SDL_CreateRGBSurfaceFrom(iconTexture.GetPixels(), iconTexture.GetWidth(), iconTexture.GetHeight(), BPP, iconTexture.GetPitch(), 0xff0000, 0x00ff00, 0x0000ff, 0xff000000L), NULL);
   SDL_WM_SetCaption("XBMC Media Center", NULL);
+  CLog::Log(LOGDEBUG, "SDL/GLES Window: BPP:%d, ASIZE:%d", BPP, ASIZE);
 
   m_bWindowCreated = true;
 
@@ -411,6 +412,17 @@ bool CWinSystemX11GLES::RefreshEGLContext()
     CLog::Log(LOGERROR, "EGL Error: Could not make context current");
     return false;
   }
+
+#if 1
+  /* The XInternAtom() function returns the atom identifier associated
+     with the specified atom_name string. If only_if_exists is False,
+     the atom is created if it does not exist. */
+  Atom property = XInternAtom (m_dpy,"_MUTTER_HINTS",0);
+  /*set the contents of the property*/
+  char data[] = "meego-tv-cutout-x=0:meego-tv-cutout-y=0:meego-tv-cutout-width=100:meego-tv-cutout-height=100:meego-tv-half-trans=1:meego-tv-full-window=1";
+  XChangeProperty(m_dpy,m_wmWindow,property,XA_STRING,8,PropModeReplace,(unsigned char *)data,strlen(data));
+  XFlush(m_dpy);
+#endif
 
   CLog::Log(LOGDEBUG, "RefreshEGLContext Succeeded! Format:A%d|R%d|G%d|B%d|BPP%d", ASIZE, RSIZE, GSIZE, BSIZE, DEPTH);
   return true;

@@ -75,6 +75,7 @@ bool CWinSystemX11::InitWindowSystem()
     SDL_GL_SetAttribute(SDL_GL_BLUE_SIZE,  8);
     SDL_GL_SetAttribute(SDL_GL_ALPHA_SIZE, 8);
     SDL_GL_SetAttribute(SDL_GL_DOUBLEBUFFER, 1);
+    SDL_GL_SetAttribute(SDL_GL_DEPTH_SIZE, 32);
 
     return CWinSystemBase::InitWindowSystem();
   }
@@ -343,15 +344,12 @@ bool CWinSystemX11::RefreshGlxContext()
   m_glWindow = info.info.x11.window;
   m_wmWindow = info.info.x11.wmwindow;
 
-  /* Assume a depth of 24 in case the below calls to XGetWindowAttributes()
-     or XGetVisualInfo() fail. That shouldn't happen unless something is
-     fatally wrong, but lets prepare for everything. */
-  vMask.depth = 24;
+  vMask.depth = 32;
 
   if (XGetWindowAttributes(m_dpy, m_glWindow, &winAttr))
   {
     vMask.visualid = XVisualIDFromVisual(winAttr.visual);
-    vInfo = XGetVisualInfo(m_dpy, VisualScreenMask | VisualIDMask, &vMask, &availableVisuals);
+    vInfo = XGetVisualInfo(m_dpy, VisualScreenMask | VisualIDMask | VisualDepthMask , &vMask, &availableVisuals);
     if (!vInfo)
       CLog::Log(LOGWARNING, "Failed to get VisualInfo of SDL visual 0x%x", (unsigned) vMask.visualid);
     else if(!IsSuitableVisual(vInfo))
@@ -365,6 +363,15 @@ bool CWinSystemX11::RefreshGlxContext()
   }
   else
     CLog::Log(LOGWARNING, "Failed to get SDL window attributes");
+
+  /* The XInternAtom() function returns the atom identifier associated
+     with the specified atom_name string. If only_if_exists is False,
+     the atom is created if it does not exist. */
+  Atom property = XInternAtom (m_dpy,"_MUTTER_HINTS",0);
+  /*set the contents of the property*/
+  char data[] = "meego-tv-cutout-x=0:meego-tv-cutout-y=0:meego-tv-cutout-width=100:meego-tv-cutout-height=100:meego-tv-half-trans=1:meego-tv-full-window=1";
+  XChangeProperty(m_dpy,m_wmWindow,property,XA_STRING,8,PropModeReplace,(unsigned char *)data,strlen(data));
+  XFlush(m_dpy);
 
   /* As per glXMakeCurrent documentation, we have to use the same visual as
      m_glWindow. Since that was not suitable for use, we try to use another

@@ -591,21 +591,7 @@ void CLinuxRendererGLES::LoadShaders(int field)
     m_pYUVShader = NULL;
   }
 
-  switch(requestedMethod)
-  {
-    case RENDER_METHOD_AUTO:
-    case RENDER_METHOD_GLSL:
-      CLog::Log(LOGNOTICE, "GL: Using BYPASS render method");
-      m_renderMethod = RENDER_BYPASS;
-      break;
-    case RENDER_METHOD_SOFTWARE:
-    default:
-      {
-        // Use software YUV 2 RGB conversion if user requested it or GLSL failed
-        m_renderMethod = RENDER_SW ;
-        CLog::Log(LOGNOTICE, "GL: Using software color conversion/RGBA rendering");
-      }
-  }
+  m_renderMethod = RENDER_BYPASS;
 
   // determine whether GPU supports NPOT textures
   if (!g_Windowing.IsExtSupported("GL_TEXTURE_NPOT"))

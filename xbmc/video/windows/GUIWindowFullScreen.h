@@ -51,6 +51,7 @@ private:
   void RenderTTFSubtitles();
   void SeekChapter(int iChapter);
   void ToggleOSD();
+  int init_ressources();
 
   enum SEEK_TYPE { SEEK_ABSOLUTE, SEEK_RELATIVE };
   enum SEEK_DIRECTION { SEEK_FORWARD, SEEK_BACKWARD };
