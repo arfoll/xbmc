@@ -108,21 +108,6 @@ ifneq (@DISABLE_RSXS@,1)
   SS_DIRS+= xbmc/screensavers/rsxs-0.9/xbmc
 endif
 
-VIS_DIRS=xbmc/visualizations/OpenGLSpectrum \
-         xbmc/visualizations/WaveForm
-
-ifneq (@DISABLE_PROJECTM@,1)
-  VIS_DIRS+= xbmc/visualizations/XBMCProjectM
-endif
-
-ifeq (($(findstring osx,@ARCH@), osx),(@USE_OPENGL@,1))
-  VIS_DIRS+=xbmc/visualizations/iTunes
-endif
-
-ifneq (@DISABLE_GOOM@,1)
-  VIS_DIRS+=xbmc/visualizations/Goom
-endif
-
 CONFLUENCE_MEDIA=addons/skin.confluence/media
 SKIN_DIRS=$(CONFLUENCE_MEDIA)
 
@@ -153,7 +138,7 @@ all : Makefile externals xbmc.bin xbmc-xrandr skins
 
 include Makefile.include
 
-.PHONY : dllloader exports visualizations screensavers eventclients \
+.PHONY : dllloader exports screensavers eventclients \
 	imagelib codecs externals force skins
 
 # hack targets to keep build system up to date
@@ -207,8 +192,6 @@ dllloader: exports xbmc/cores/DllLoader/dllloader.a
 $(VIS_DIRS) $(SS_DIRS): force exports
 	$(MAKE) -C $@
 
-visualizations: $(VIS_DIRS)
-
 screensavers: $(SS_DIRS)
 
 libpython: dllloader
@@ -238,10 +221,10 @@ imagelib: dllloader
 	$(MAKE) -C lib/cximage-6.0
 
 libs: libid3tag imagelib libexif system/libcpluff-@ARCH@.so
-externals: codecs libs visualizations screensavers
+externals: codecs libs screensavers
 
 xcode_depends: \
-	codecs libs visualizations screensavers eventclients skins \
+	codecs libs screensavers eventclients skins \
 	lib/libsquish/libsquish.a \
 	lib/libapetag/.libs/libapetag.a \
 
@@ -378,8 +361,6 @@ clean-libs:
 	for d in $(LIB_DIRS); do if test -f $$d/Makefile; then $(MAKE) -C $$d clean; fi; done
 clean-screensavers: 
 	for d in $(SS_DIRS); do if test -f $$d/Makefile; then $(MAKE) -C $$d clean; fi; done
-clean-visualisations:
-	for d in $(VIS_DIRS); do if test -f $$d/Makefile; then $(MAKE) -C $$d clean; fi; done
 
 clean-externals: clean-codecs clean-eventclients clean-xbmctex clean-libs \
-	clean-screensavers clean-visualisations
+	clean-screensavers 
