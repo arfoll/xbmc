@@ -388,12 +388,9 @@ void CMeegoPlayer::SetVolume(long volume)
 */
 bool CMeegoPlayer::Initialize(TiXmlElement* pConfig)
 {
-  /* Legacy configuration */
-  //  XMLUtils::GetBoolean(pConfig, "playonestackitem", m_playOneStackItem);
-  //  XMLUtils::GetInt(pConfig, "playcountminimumtime", m_playCountMinTime, 1, INT_MAX);
-  /* New config specific to meegoplayer - pinkvideo is the default */
-  //  XMLUtils::GetBoolean(pConfig, "pinkmusic", m_pinkmusic);
-  //  XMLUtils::GetBoolean(pConfig, "pinkvideo", m_pinkvideo);
+  /* Config specific to meegoplayer - pinkvideo is the default */
+  XMLUtils::GetBoolean(pConfig, "pinkmusic", m_pinkmusic);
+  XMLUtils::GetBoolean(pConfig, "pinkvideo", m_pinkvideo);
 
   CLog::Log(LOGNOTICE, "MeeGo dbus player : pinkmusic (%s), pinkvideo (%s)",
             m_pinkmusic ? "true" : "false",
@@ -535,7 +532,7 @@ bool CMeegoPlayer::waitOnDbus()
     dbus_connection_flush(connection);
 
     bool eos = false;
-    callDbusMethod("GetMediaSizeTime", "", 0); 
+    callDbusMethod("GetMediaSizeTime", "", 0);
 
     /* stay stuck here until dbus says it's ok or m_bIsPlaying is false */
     while (m_bIsPlaying) {
@@ -564,7 +561,7 @@ bool CMeegoPlayer::waitOnDbus()
             }
         }
         else {
-            CLog::Log(LOGDEBUG,"MeeGo dbus player: Received signal from dbus");      
+            CLog::Log(LOGDEBUG,"MeeGo dbus player: Received signal from dbus");
             if (dbus_message_is_signal (message, UMMS_MEDIA_PLAYER_INTERFACE_NAME, "Eof")) {
                 /* we are EOF */
                 m_bIsPlaying = false;
@@ -574,7 +571,7 @@ bool CMeegoPlayer::waitOnDbus()
                 CLog::Log(LOGDEBUG,"MeeGo dbus player: New URI signal received");
             } else if (dbus_message_is_signal (message, UMMS_MEDIA_PLAYER_INTERFACE_NAME, "PlayerStateChanged")) {
                 CLog::Log(LOGDEBUG,"MeeGo dbus player: Playing signal received");
-            } else if (dbus_message_is_signal (message, UMMS_MEDIA_PLAYER_INTERFACE_NAME, "Error")) {        
+            } else if (dbus_message_is_signal (message, UMMS_MEDIA_PLAYER_INTERFACE_NAME, "Error")) {
                 CLog::Log(LOGDEBUG,"MeeGo dbus player: Error signal received");
                 m_bIsPlaying = false;
                 CGUIDialogOK::ShowAndGetInput(257, 854, 0, 0);
@@ -597,7 +594,6 @@ int CMeegoPlayer::callDbusMethod(CStdString method, CStdString value, dbus_int32
     int result = 0;
 
     CLog::Log(LOGDEBUG,"MeeGo dbus player: Enter the dbus call: %s", method.c_str());
-    //printf("------------ Enter the dbus call: %s\n", method.c_str());
 
     if (connection == NULL) {
         CLog::Log(LOGDEBUG,"MeeGo dbus player: Failed to open connection to dbus. Check permissions: %s", error.message);
