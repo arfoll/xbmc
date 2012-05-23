@@ -705,6 +705,8 @@
   <string id="850">Invalid port number entered</string>
   <string id="851">Valid port range is 1-65535</string>
   <string id="852">Valid port range is 1024-65535</string>
+  <string id="853">UMMS doesn't seem to be running</string>
+  <string id="854">Media type is unsupported</string>
 
   <string id="998">Add Music...</string>
   <string id="999">Add Videos...</string>

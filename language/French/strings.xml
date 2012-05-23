@@ -706,6 +706,9 @@
   <string id="850">Numéro de port invalide</string>
   <string id="851">Port valide compris entre 1-65535</string>
   <string id="852">Port valide compris entre 1024-65535</string>
+  <string id="853">UMMS n'est pas actif</string>
+  <string id="854">Ce type de media n'est pas supporté</string>
+
 
   <string id="998">Ajouter une source musicale...</string>
   <string id="999">Ajouter une source vidéo...</string>

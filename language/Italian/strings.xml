@@ -707,6 +707,8 @@
   <string id="850">Inserito un numero di porta non valido</string>
   <string id="851">Il numero di porta deve essere compreso tra 1-65535</string>
   <string id="852">Il numero di porta deve essere compreso tra 1024-65535</string>
+  <string id="853">UMMS non è in esecuzione</string>
+  <string id="854">Questo media non è supportato</string>
 
   <string id="998">Aggiungi Musica...</string>
   <string id="999">Aggiungi Video...</string>

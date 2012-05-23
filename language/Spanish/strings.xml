@@ -704,6 +704,8 @@
   <string id="850">Numero de puerto introducido inválido</string>
   <string id="851">El rango válido de puertos es 1-65535</string>
   <string id="852">El rango válido de puertos es 1024-65535</string>
+  <string id="853">UMMS no esta iniciado</string>
+  <string id="854">Este typo de media no es compatible</string>
 
   <string id="1000">- Vista previa</string>
   <string id="1001">Imposible conectar</string>

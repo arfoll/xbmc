@@ -709,6 +709,8 @@
   <string id="850">Ungültige Portnummer eingegeben</string>
   <string id="851">Gültige Ports: 1-65535</string>
   <string id="852">Gültige Ports: 1024-65535</string>
+  <string id="853">UMMS wird nicht ausgeführt</string>
+  <string id="854">Dies media wird nicht unterstützt</string>
 
   <string id="998">Musik hinzufügen...</string>
   <string id="999">Videos hinzufügen...</string>
