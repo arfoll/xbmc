@@ -23,11 +23,7 @@
 #include "IDirtyRegionSolver.h"
 #include "DirtyRegionSolvers.h"
 
-#if defined(TARGET_DARWIN_IOS)
-#define DEFAULT_BUFFERING 4
-#else
 #define DEFAULT_BUFFERING 3
-#endif
 
 class CDirtyRegionTracker
 {
