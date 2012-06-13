@@ -47,8 +47,8 @@
 
 // Default time after which the item's playcount is incremented
 #define DEFAULT_PLAYCOUNT_MIN_TIME 10
-// DBUS reply timeout
-#define DBUS_REPLY_TIMEOUT -1
+// DBUS reply timeout is now half a second
+#define DBUS_REPLY_TIMEOUT 500
 // UMMS Dbus Stuff
 #define UMMS_SERVICE_NAME "com.UMMS"
 #define UMMS_OBJECT_MANAGER_OBJECT_PATH "/com/UMMS/ObjectManager"
@@ -388,13 +388,18 @@ void CMeegoPlayer::SetVolume(long volume)
 */
 bool CMeegoPlayer::Initialize(TiXmlElement* pConfig)
 {
-  /* Config specific to meegoplayer - pinkvideo is the default */
-  XMLUtils::GetBoolean(pConfig, "pinkmusic", m_pinkmusic);
-  XMLUtils::GetBoolean(pConfig, "pinkvideo", m_pinkvideo);
+  // it is possible to play files not considered audio or video by XBMC
+  // and then pConfig will be NULL. We will wait for UMMS to attempt playback
+  // and leave the default settings for 'pink' stuff
+  if (pConfig) {
+    /* Config specific to meegoplayer - pinkvideo is the default */
+    XMLUtils::GetBoolean(pConfig, "pinkmusic", m_pinkmusic);
+    XMLUtils::GetBoolean(pConfig, "pinkvideo", m_pinkvideo);
 
-  CLog::Log(LOGNOTICE, "MeeGo dbus player : pinkmusic (%s), pinkvideo (%s)",
-            m_pinkmusic ? "true" : "false",
-            m_pinkvideo ? "true" : "false");
+    CLog::Log(LOGNOTICE, "MeeGo dbus player : pinkmusic (%s), pinkvideo (%s)",
+              m_pinkmusic ? "true" : "false",
+              m_pinkvideo ? "true" : "false");
+  }
 
   return true;
 }
