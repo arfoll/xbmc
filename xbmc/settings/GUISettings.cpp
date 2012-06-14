@@ -318,10 +318,10 @@ void CGUISettings::Initialize()
   AddString(scr, "scrobbler.librefmusername", 15218, "", EDIT_CONTROL_INPUT, false, 15218);
   AddString(scr, "scrobbler.librefmpass", 15219, "", EDIT_CONTROL_MD5_INPUT, false, 15219);
 
+#if 0
   CSettingsCategory* acd = AddCategory(3, "audiocds", 620);
   AddBool(acd, "audiocds.autorun", 14085, false);
   AddBool(acd, "audiocds.usecddb", 227, true);
-#if 0
   AddSeparator(acd, "audiocds.sep1");
   AddPath(acd,"audiocds.recordingpath",20000,"select writable folder",BUTTON_CONTROL_PATH_INPUT,false,657);
   AddString(acd, "audiocds.trackpathformat", 13307, "%A - %B/[%N. ][%A - ]%T", EDIT_CONTROL_INPUT, false, 16016);
@@ -362,6 +362,7 @@ void CGUISettings::Initialize()
 
   // System settings
   AddGroup(4, 13000);
+#if 0
   CSettingsCategory* vs = AddCategory(4, "videoscreen", 21373);
 
 #if (defined(__APPLE__) && defined(__arm__))
@@ -427,6 +428,7 @@ void CGUISettings::Initialize()
 #if defined(HAS_LCD)
   AddBool(vs, "videoscreen.haslcd", 4501, false);
 #endif
+#endif
 
 #if 0
   CSettingsCategory* ao = AddCategory(4, "audiooutput", 772);
@@ -470,6 +472,7 @@ void CGUISettings::Initialize()
 #endif
 #endif
 
+#if 0
   CSettingsCategory* in = AddCategory(4, "input", 14094);
   AddString(in, "input.peripherals", 35000, "", BUTTON_CONTROL_STANDARD);
 #if defined(__APPLE__)
@@ -492,6 +495,7 @@ void CGUISettings::Initialize()
   AddBool(NULL, "input.enablemouse", 21369, true);
 #else
   AddBool(in, "input.enablemouse", 21369, false);
+#endif
 #endif
 
   CSettingsCategory* pwm = AddCategory(4, "powermanagement", 14095);
