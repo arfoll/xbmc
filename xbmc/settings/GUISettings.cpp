@@ -362,73 +362,26 @@ void CGUISettings::Initialize()
 
   // System settings
   AddGroup(4, 13000);
-#if 0
   CSettingsCategory* vs = AddCategory(4, "videoscreen", 21373);
 
-#if (defined(__APPLE__) && defined(__arm__))
-  // define but hide display, resolution and blankdisplays settings on atv2/ios, they are not user controlled
-  AddInt(NULL, "videoscreen.screen", 240, 0, -1, 1, g_Windowing.GetNumScreens(), SPIN_CONTROL_TEXT);
-  AddInt(NULL, "videoscreen.resolution", 131, -1, 0, 1, INT_MAX, SPIN_CONTROL_TEXT);
-  AddBool(NULL, "videoscreen.blankdisplays", 13130, false);
-#else
   // this setting would ideally not be saved, as its value is systematically derived from videoscreen.screenmode.
   // contains a DISPLAYMODE
-  AddInt(vs, "videoscreen.screen", 240, 0, -1, 1, g_Windowing.GetNumScreens(), SPIN_CONTROL_TEXT);
+  AddInt(NULL, "videoscreen.screen", 240, 0, -1, 1, g_Windowing.GetNumScreens(), SPIN_CONTROL_TEXT);
   // this setting would ideally not be saved, as its value is systematically derived from videoscreen.screenmode.
   // contains an index to the g_settings.m_ResInfo array. the only meaningful fields are iScreen, iWidth, iHeight.
-#if defined (__APPLE__)
-  AddInt(vs, "videoscreen.resolution", 131, -1, 0, 1, INT_MAX, SPIN_CONTROL_TEXT);
-#else
-  AddInt(vs, "videoscreen.resolution", 169, -1, 0, 1, INT_MAX, SPIN_CONTROL_TEXT);
-#endif
-  AddString(g_application.IsStandAlone() ? vs : NULL, "videoscreen.screenmode", 243, "DESKTOP", SPIN_CONTROL_TEXT);
+  AddInt(NULL, "videoscreen.resolution", 169, -1, 0, 1, INT_MAX, SPIN_CONTROL_TEXT);
+  AddString(NULL, "videoscreen.screenmode", 243, "DESKTOP", SPIN_CONTROL_TEXT);
 
-#if defined(_WIN32) || defined (__APPLE__)
-  // We prefer a fake fullscreen mode (window covering the screen rather than dedicated fullscreen)
-  // as it works nicer with switching to other applications. However on some systems vsync is broken
-  // when we do this (eg non-Aero on ATI in particular) and on others (AppleTV) we can't get XBMC to
-  // the front
-  bool fakeFullScreen = true;
-  bool showSetting = true;
-  if (g_sysinfo.IsAeroDisabled())
-    fakeFullScreen = false;
-
-#if defined(_WIN32) && defined(HAS_GL)
-  fakeFullScreen = true;
-  showSetting = false;
-#endif
-
-#if defined (__APPLE__)
-  if (g_sysinfo.IsAppleTV())
-  {
-    fakeFullScreen = false;
-  }
-  showSetting = false;
-#endif
-  AddBool(showSetting ? vs : NULL, "videoscreen.fakefullscreen", 14083, fakeFullScreen);
-  AddBool(vs, "videoscreen.blankdisplays", 13130, false);
+  AddBool(NULL, "videoscreen.fakefullscreen", 14083, false);
+  AddBool(NULL, "videoscreen.blankdisplays", 13130, false);
   AddSeparator(vs, "videoscreen.sep1");
-#endif
-#endif
 
   map<int,int> vsync;
-#if defined(_LINUX) && !defined(__APPLE__)
   vsync.insert(make_pair(13101,VSYNC_DRIVER));
-#endif
-  vsync.insert(make_pair(13106,VSYNC_DISABLED));
-  vsync.insert(make_pair(13107,VSYNC_VIDEO));
-  vsync.insert(make_pair(13108,VSYNC_ALWAYS));
-  AddInt(vs, "videoscreen.vsync", 13105, DEFAULT_VSYNC, vsync, SPIN_CONTROL_TEXT);
+  AddInt(NULL, "videoscreen.vsync", 13105, DEFAULT_VSYNC, vsync, SPIN_CONTROL_TEXT);
 
   AddString(vs, "videoscreen.guicalibration",214,"", BUTTON_CONTROL_STANDARD);
-#ifndef HAS_DX
-  // Todo: Implement test pattern for DX
-  AddString(vs, "videoscreen.testpattern",226,"", BUTTON_CONTROL_STANDARD);
-#endif
-#if defined(HAS_LCD)
-  AddBool(vs, "videoscreen.haslcd", 4501, false);
-#endif
-#endif
+  AddBool(NULL, "videoscreen.haslcd", 4501, false);
 
 #if 0
   CSettingsCategory* ao = AddCategory(4, "audiooutput", 772);

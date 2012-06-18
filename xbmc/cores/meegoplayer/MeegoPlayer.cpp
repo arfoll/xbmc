@@ -71,7 +71,9 @@ CMeegoPlayer::CMeegoPlayer(IPlayerCallback& callback)
   m_time = 0;
   m_waitTime = 0;
   m_pauseTime = 0;
-  m_volume = 1.0f;
+
+  // default UMMS volume is 50 so lets force it to 100 so we get the full range
+  m_volume = 100;
   m_volumeu = false;
 
   // by default this is a video player
@@ -324,7 +326,7 @@ void CMeegoPlayer::SetSubTitleDelay(float fValue)
 
 float CMeegoPlayer::GetSubTitleDelay()
 {
-  return 0.0;
+  return 0.0f;
 }
 
 void CMeegoPlayer::SeekTime(__int64 iTime)
@@ -367,16 +369,15 @@ bool CMeegoPlayer::SetPlayerState(CStdString state)
 
 void CMeegoPlayer::SetVolume(long volume)
 {
-  if (volume == -6000) {
-    /* We are muted */
-    m_volume = 0;
-  } else {
-    //m_volume = (double) volume / -10000;
-    /* Convert what XBMC gives into 0.0 -> 1.0 scale playbin2 uses */
-    //m_volume = ((1 - m_volume) - 0.4) * 1.6666;
+#if 0
+  CLog::Log(LOGDEBUG,"MeeGo dbus player: SetVolume %ld", volume);
+#endif
+  // convert value to something UMMS is happy with
+  // Note default UMMS volume is 50 and highest volume is 100 so vol down is a bit funny.
+  //m_volume = 100 - (((volume/120) * -1) * 2);
 
-    m_volume = volume;
-  }
+  // so we use 50 as max volume...
+  m_volume = 50 - ((volume/120) * -1);
 
   /* update the volume later */
   m_volumeu = true;
@@ -551,7 +552,7 @@ bool CMeegoPlayer::waitOnDbus()
                 CLog::Log(LOGDEBUG,"MeeGo dbus player: m_speed is : %d", m_speed);
                 callDbusMethod ("SetPlaybackRate", "", m_speed);
                 m_old_speed = m_speed;
-                m_time = callDbusMethod ("GetPosition", "", 0);
+                //m_time = callDbusMethod ("GetPosition", "", 0);
             } else if (m_volumeu) {
                 Sleep(100);
                 m_volumeu = false;
@@ -566,7 +567,7 @@ bool CMeegoPlayer::waitOnDbus()
             }
         }
         else {
-            CLog::Log(LOGDEBUG,"MeeGo dbus player: Received signal from dbus");
+            //CLog::Log(LOGDEBUG,"MeeGo dbus player: Received signal from dbus");
             if (dbus_message_is_signal (message, UMMS_MEDIA_PLAYER_INTERFACE_NAME, "Eof")) {
                 /* we are EOF */
                 m_bIsPlaying = false;
@@ -581,7 +582,7 @@ bool CMeegoPlayer::waitOnDbus()
                 m_bIsPlaying = false;
                 CGUIDialogOK::ShowAndGetInput(257, 854, 0, 0);
             } else if (dbus_message_is_signal (message, UMMS_MEDIA_PLAYER_INTERFACE_NAME, "NeedReply")) {
-                CLog::Log(LOGDEBUG,"MeeGo dbus player: NeedReply received");
+                //CLog::Log(LOGDEBUG,"MeeGo dbus player: NeedReply received");
                 callDbusMethod("Reply", "", 0);
             } else {
                 CLog::Log(LOGNOTICE,"MeeGo dbus player: Signal received but not recognised");
@@ -598,7 +599,7 @@ int CMeegoPlayer::callDbusMethod(CStdString method, CStdString value, dbus_int32
     DBusMessage *reply;
     int result = 0;
 
-    CLog::Log(LOGDEBUG,"MeeGo dbus player: Enter the dbus call: %s", method.c_str());
+    //CLog::Log(LOGDEBUG,"MeeGo dbus player: Enter the dbus call: %s", method.c_str());
 
     if (connection == NULL) {
         CLog::Log(LOGDEBUG,"MeeGo dbus player: Failed to open connection to dbus. Check permissions: %s", error.message);
@@ -617,7 +618,7 @@ int CMeegoPlayer::callDbusMethod(CStdString method, CStdString value, dbus_int32
         }
     }
 
-    CLog::Log(LOGNOTICE, "MeeGo dbus player: dbus path is %s", m_playerName);
+    //CLog::Log(LOGNOTICE, "MeeGo dbus player: dbus path is %s", m_playerName);
     message = dbus_message_new_method_call (UMMS_SERVICE_NAME,
             m_playerName,
             UMMS_MEDIA_PLAYER_INTERFACE_NAME,
@@ -625,18 +626,18 @@ int CMeegoPlayer::callDbusMethod(CStdString method, CStdString value, dbus_int32
     if (method.compare("SetPlaybackRate") == 0) {
         double d_speed = (double)speed;
         dbus_message_append_args (message, DBUS_TYPE_DOUBLE, &d_speed, DBUS_TYPE_INVALID);
-        CLog::Log(LOGDEBUG, "MeeGo dbus player: set_rate %d message will be sent", speed);
+        //CLog::Log(LOGDEBUG, "MeeGo dbus player: set_rate %d message will be sent", speed);
     } if (method.compare("SetVolume") == 0) {
         dbus_message_append_args (message, DBUS_TYPE_INT32, &m_volume, DBUS_TYPE_INVALID);
-        CLog::Log(LOGDEBUG, "MeeGo dbus player: set_volume %d message will be sent", m_volume);
+        //CLog::Log(LOGDEBUG, "MeeGo dbus player: set_volume %d message will be sent", m_volume);
     } if (method.compare("SetUri") == 0) {
         const char *valueC = value.c_str();
         dbus_message_append_args (message, DBUS_TYPE_STRING, &valueC,
                 DBUS_TYPE_INVALID);
-        CLog::Log(LOGDEBUG, "MeeGo dbus player: SetUri:%s message will be sent", valueC);
+        //CLog::Log(LOGDEBUG, "MeeGo dbus player: SetUri:%s message will be sent", valueC);
     } else {
         dbus_message_append_args (message, DBUS_TYPE_INVALID);
-        CLog::Log(LOGDEBUG, "MeeGo dbus player: %s message will be sent", method.c_str());
+        //CLog::Log(LOGDEBUG, "MeeGo dbus player: %s message will be sent", method.c_str());
     }
 
     /* Call method */
@@ -656,7 +657,7 @@ int CMeegoPlayer::callDbusMethod(CStdString method, CStdString value, dbus_int32
                 type = dbus_message_iter_get_arg_type (&args);
                 if (type == DBUS_TYPE_INT64) {
                     dbus_message_iter_get_basic(&args, &l_time);
-                    CLog::Log(LOGDEBUG, "Total time is %li", l_time);
+                    //CLog::Log(LOGDEBUG, "Total time is %li", l_time);
                     m_totalTime = (int)(l_time/1000);
                 }
             }
