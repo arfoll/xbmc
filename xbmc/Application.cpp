@@ -2444,18 +2444,7 @@ bool CApplication::OnAction(const CAction &action)
   // previous : play previous song from playlist
   if (action.GetID() == ACTION_PREV_ITEM)
   {
-    // first check whether we're within 3 seconds of the start of the track
-    // if not, we just revert to the start of the track
-    if (m_pPlayer && m_pPlayer->CanSeek() && GetTime() > 3)
-    {
-      SeekTime(0);
-      SetPlaySpeed(1);
-    }
-    else
-    {
-      g_playlistPlayer.PlayPrevious();
-    }
-    return true;
+    g_playlistPlayer.PlayPrevious();
   }
 
   // next : play next song from playlist
